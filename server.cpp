@@ -6,6 +6,8 @@
 # include <string.h>
 # include <sys/socket.h>
 # include <unistd.h>
+# include <thread>
+# include <vector>
 
 # include "send_read.cpp"
 
@@ -18,6 +20,60 @@
 # include <cppconn/prepared_statement.h>
 
 # define PORT 8080
+
+void thread_func(int client_socket, sql::Connection* con)
+{
+    int id;
+    sql::ResultSet  *res;
+    sql::Statement *stmt;
+    con->setSchema("testdb");
+
+    while(1)
+    {
+        std::cout << "waiting read\n";
+
+        read(client_socket, &id, 4);
+        std::cout << "read id : " << id << "\n";
+
+        if (id == -1)
+            break;
+
+        stmt = con->createStatement();
+
+        std::string query = "SELECT name FROM test_t WHERE id = ";
+        query += std::to_string(id);
+
+        std::string result;
+        res = stmt->executeQuery(query);
+
+        while (res->next())
+        {
+            // cout << "id = " << res->getInt(1) << endl;
+            result = res->getString("name");
+            // std::cout << "name = " << result << std::endl;
+        }
+
+        if (result != "")
+        {
+            send_msg_socket(client_socket, result.c_str());
+            std::cout << "send message : " << result << "\n";
+        }
+        else
+        {
+            send_msg_socket(client_socket, "id dosent exist");
+            std::cout << "send message : " << "id dosent exist" << "\n";
+        }
+
+    }
+
+    delete res;
+    delete stmt;
+
+    // closing the connected socket
+    std::cout << "close client\n";
+    close(client_socket);
+}
+
 
 int main()
 {
@@ -68,10 +124,11 @@ int main()
     }
 
     std::cout << "binding access!\n";
+    std::vector<std::thread> threads;
 
-    // while(1)
-    // {
-        if (listen(server_fd, 3) < 0) 
+    while(1)
+    {
+        if (listen(server_fd, 1) < 0) 
         {
             perror("listen");
             exit(EXIT_FAILURE);
@@ -83,40 +140,12 @@ int main()
             exit(EXIT_FAILURE);
         }
 
-        int id;
-        read(new_socket, &id, 2);
-        std::cout << "read id : " << id << "\n";
+        threads.push_back(std::thread(thread_func, new_socket, con));
 
-        con->setSchema("testdb");
-        sql::ResultSet  *res;
-        sql::Statement *stmt;
-        stmt = con->createStatement();
-
-        std::string query = "SELECT id, name FROM test_t WHERE id = ";
-        query += std::to_string(id);
-
-        std::string result;
-        res = stmt->executeQuery(query);
-        while (res->next())
-        {
-            // cout << "id = " << res->getInt(1) << endl;
-            result = res->getString("name");
-            std::cout << "name = " << result << std::endl;
-        }
-
-        send_msg_socket(new_socket, result.c_str());
-        std::cout << "send message : " << result << "\n";
+    }
 
 
-
-    // }
-
-
-    delete res;
-    delete stmt;
     delete con;
-    // closing the connected socket
-    close(new_socket);
     // closing the listening socket
     shutdown(server_fd, SHUT_RDWR);
     return 0;

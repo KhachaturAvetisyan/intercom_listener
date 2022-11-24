@@ -39,17 +39,25 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    int id = 5;
+    int id;
     char* buff;
 
-    send(sock, &id, 2, 0);
-    std::cout << "send id : " << id << "\n";
+    while(1)
+    {
 
-    read_msg_socket(sock, &buff);
-    if (!strcmp(buff, ""))
-        std::cout << "id dose not exist\n";
-    else
-        std::cout << "read message : " << buff << "\n";
+        std::cin >> id;
+
+        send(sock, &id, 4, 0);
+        std::cout << "send id : " << id << "\n";
+
+        if (id == -1)
+            break;
+
+        read_msg_socket(sock, &buff);
+        std::cout << buff << "\n";
+
+    }
+
 
     // closing the connected socket
     close(client_fd);

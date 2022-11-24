@@ -1,6 +1,6 @@
 MYSQL_CONCPP_DIR = /usr
 CPPFLAGS = -I $(MYSQL_CONCPP_DIR)/include/cppconn -L $(MYSQL_CONCPP_DIR)/lib
-LDLIBS = -lmysqlcppconn
+LDLIBS = -lmysqlcppconn -lpthread
 # CXXFLAGS = -std=c++11
 
 all: server client
