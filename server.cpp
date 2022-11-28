@@ -8,6 +8,7 @@
 # include <unistd.h>
 # include <thread>
 # include <vector>
+# include <ctime>
 
 # include "send_read.cpp"
 
@@ -21,50 +22,93 @@
 
 # define PORT 8080
 
+std::string DEV_T = "Dev";
+std::string USERS_T = "Users";
+std::string RFID_T = "Rfid";
+
+
+typedef struct 
+{
+  uint32_t startword;
+  char imei[15];
+  uint8_t checksum;
+}init_struct;
+
+
+void update_time(sql::Connection* con, std::string devid)
+{
+        sql::Statement *declaration;
+        time_t current_time;
+        time(&current_time);
+
+        declaration = con->createStatement();
+        declaration->executeUpdate("UPDATE " + DEV_T + " SET time = '" + std::to_string(current_time) + "', upd_f = 0 WHERE id = '" + devid + "'");
+        
+        delete declaration;
+}
+
+
 void thread_func(int client_socket, sql::Connection* con)
 {
-    int id;
+    // struct init
+    init_struct* init_s;
+    init_s = (init_struct*)malloc(sizeof(init_struct));
+
+    read(client_socket, init_s, 20);
+
+    if (init_s->startword != 0x11223344)
+    {
+        std::cout << "start word error\n";
+        // closing the connected socket
+        std::cout << "close client\n";
+        close(client_socket);
+        return;
+    }
+    
+    uint8_t loc_checksum = 0;
+    for (int i = 0; i < 19; ++i)
+        loc_checksum ^= ((uint8_t*)init_s)[i];
+
+    if (loc_checksum != init_s->checksum)
+    {
+        std::cout << "checksum error\n";
+        // closing the connected socket
+        std::cout << "close client\n";
+        close(client_socket);
+        return;
+    }
+    
+    std::string imei;
+    for (int i = 0; i < 15; ++i)
+        imei += init_s->imei[i];
+
+    std::cout << imei << "\n";
+
+
+    // check imei
     sql::ResultSet  *res;
     sql::Statement *stmt;
-    con->setSchema("testdb");
 
-    while(1)
+    con->setSchema("dom_test_db");
+    stmt = con->createStatement();
+
+    std::string result;
+    res = stmt->executeQuery("SELECT id FROM " + DEV_T + " WHERE imei = " + imei);
+
+    while (res->next())
     {
-        std::cout << "waiting read\n";
+        result = res->getString("id");
 
-        read(client_socket, &id, 4);
-        std::cout << "read id : " << id << "\n";
-
-        if (id == -1)
-            break;
-
-        stmt = con->createStatement();
-
-        std::string query = "SELECT name FROM test_t WHERE id = ";
-        query += std::to_string(id);
-
-        std::string result;
-        res = stmt->executeQuery(query);
-
-        while (res->next())
-        {
-            // cout << "id = " << res->getInt(1) << endl;
-            result = res->getString("name");
-            // std::cout << "name = " << result << std::endl;
-        }
-
-        if (result != "")
-        {
-            send_msg_socket(client_socket, result.c_str());
-            std::cout << "send message : " << result << "\n";
-        }
-        else
-        {
-            send_msg_socket(client_socket, "id dosent exist");
-            std::cout << "send message : " << "id dosent exist" << "\n";
-        }
-
+        send_msg_socket(client_socket, result.c_str());
+        std::cout << "send message : " << result << "\n";
     }
+
+    if (result == "")
+    {
+        send_msg_socket(client_socket, "id dosent exist");
+        std::cout << "send message : " << "id dosent exist" << "\n";
+    }
+
 
     delete res;
     delete stmt;
@@ -128,12 +172,14 @@ int main()
 
     while(1)
     {
+        std::cout << "listening\n";
         if (listen(server_fd, 1) < 0) 
         {
             perror("listen");
             exit(EXIT_FAILURE);
         }
 
+        std::cout << "accept\n";
         if ((new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0) 
         {
             perror("accept");
@@ -150,3 +196,4 @@ int main()
     shutdown(server_fd, SHUT_RDWR);
     return 0;
 }
+
