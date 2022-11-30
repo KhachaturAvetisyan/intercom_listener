@@ -6,8 +6,9 @@
 # include <sys/socket.h>
 # include <unistd.h>
 # include <stdlib.h>
+# include <ctime>
 
-# include "send_read.cpp"
+# include "../utils/send_read.cpp"
 
 # define PORT 8080
 
@@ -50,9 +51,10 @@ int main()
     init_s = (init_struct*)malloc(sizeof(init_struct));
     init_s->startword = 0x11223344;
     
-    // const char* str = "862770041752523";
+    const char* str = "862770041752523";
     // const char* str = "245189011584231";
-    const char* str = "999999999999999";
+    // const char* str = "771596412074913";
+    // const char* str = "999999999999999";
 
     for (int i = 0; i < 15; ++i)
         init_s->imei[i] = str[i];
@@ -63,9 +65,22 @@ int main()
     
     send(sock, init_s, 20, 0);
 
-    char* buff;
-    read_msg_socket(sock, &buff);
-    std::cout << buff << "\n";
+    bool imei_flag;
+    read(sock, &imei_flag, 1);
+    std::cout << imei_flag << "\n";
+
+    if (!imei_flag)
+    {
+        close(client_fd);
+        return 0;
+    }
+
+    time_t upd_time = 414086872;
+    char* upd_f;
+    upd_f = (char*)malloc(1);
+    
+    read(sock, upd_f, 1);
+    std::cout << "upd flag = " << upd_f << "\n";
 
     // closing the connected socket
     close(client_fd);

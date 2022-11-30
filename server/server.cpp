@@ -1,38 +1,4 @@
-# include <iostream>
-# include <netinet/in.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <string>
-# include <string.h>
-# include <sys/socket.h>
-# include <unistd.h>
-# include <thread>
-# include <vector>
-# include <ctime>
-
-# include "send_read.cpp"
-
-# include "mysql_connection.h"
-
-# include <cppconn/driver.h>
-# include <cppconn/exception.h>
-# include <cppconn/resultset.h>
-# include <cppconn/statement.h>
-# include <cppconn/prepared_statement.h>
-
-# define PORT 8080
-
-std::string DEV_T = "Dev";
-std::string USERS_T = "Users";
-std::string RFID_T = "Rfid";
-
-
-typedef struct 
-{
-  uint32_t startword;
-  char imei[15];
-  uint8_t checksum;
-}init_struct;
+# include "serv_include.h"
 
 
 void update_time(sql::Connection* con, std::string devid)
@@ -92,23 +58,39 @@ void thread_func(int client_socket, sql::Connection* con)
     con->setSchema("dom_test_db");
     stmt = con->createStatement();
 
-    std::string result;
+    std::string id;
+    bool imei_flag = false;
     res = stmt->executeQuery("SELECT id FROM " + DEV_T + " WHERE imei = " + imei);
 
     while (res->next())
     {
-        result = res->getString("id");
+        id = res->getString("id");
 
-        send_msg_socket(client_socket, result.c_str());
-        std::cout << "send message : " << result << "\n";
+        imei_flag = true;
+        std::cout << "send id : " << id << "\n";
     }
 
-    if (result == "")
+    send(client_socket, &imei_flag, 1, 0);
+
+    if (!imei_flag)
     {
-        send_msg_socket(client_socket, "id dosent exist");
-        std::cout << "send message : " << "id dosent exist" << "\n";
+        // closing the connected socket
+        std::cout << "close client\n";
+        close(client_socket);
+        return;
     }
 
+    std::string upd_f;
+    res = stmt->executeQuery("SELECT upd_f FROM " + DEV_T + " WHERE imei = " + imei);
+
+    while (res->next())
+    {
+        upd_f = res->getString("upd_f");
+
+        std::cout << "send upd_f : " << upd_f << "\n" << "size = " << upd_f.size() << "\n";
+    }
+
+    send(client_socket, &upd_f, 1, 0);
 
     delete res;
     delete stmt;
@@ -116,6 +98,7 @@ void thread_func(int client_socket, sql::Connection* con)
     // closing the connected socket
     std::cout << "close client\n";
     close(client_socket);
+    return;
 }
 
 
