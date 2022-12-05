@@ -16,11 +16,23 @@ void update_time(sql::Connection* con, std::string devid)
 
 void thread_func(int client_socket, sql::Connection* con)
 {
+    // init poll struct
+    struct pollfd mypoll = { client_socket, POLLIN|POLLPRI };
+
     // struct init
     init_struct* init_s;
     init_s = (init_struct*)malloc(sizeof(init_struct));
 
-    read(client_socket, init_s, 20);
+    if (poll(&mypoll, 1, 2000))
+        read(client_socket, init_s, 20);
+    else
+    {
+        std::cout << "read timeout\n";
+        // closing the connected socket
+        std::cout << "close client\n";
+        close(client_socket);
+        return;
+    }
 
     if (init_s->startword != 0x11223344)
     {

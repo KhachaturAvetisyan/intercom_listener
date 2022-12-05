@@ -63,6 +63,8 @@ int main()
     for (int i = 0; i < 19; ++i)
         init_s->checksum ^= ((uint8_t*)init_s)[i];
     
+    std::cout << "sleep 5 sec\n";
+    sleep(1);
     send(sock, init_s, 20, 0);
 
     bool imei_flag;

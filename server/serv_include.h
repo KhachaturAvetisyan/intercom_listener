@@ -12,9 +12,11 @@
 # include <thread>
 # include <vector>
 # include <ctime>
+# include <poll.h>
 
 # include "../utils/send_read.cpp"
 
+// mysql includes
 # include "mysql_connection.h"
 
 # include <cppconn/driver.h>
@@ -22,6 +24,12 @@
 # include <cppconn/resultset.h>
 # include <cppconn/statement.h>
 # include <cppconn/prepared_statement.h>
+
+// curl & json includes
+# include <curl/curl.h>
+# include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 # define PORT 8080
 
@@ -35,5 +43,8 @@ typedef struct
   char imei[15];
   uint8_t checksum;
 }init_struct;
+
+json post_req(std::string url, json post);
+json get_req(std::string url);
 
 # endif
