@@ -23,14 +23,16 @@ void read_msg_socket(int fd, char** msg)
     int16_t size_msg = 0;
 
     // read size of command output
-    if (recv(fd, &size_msg, 2, 0) < 0) {
+    if (recv(fd, &size_msg, 2, 0) < 0) 
+    {
         perror("read size error");
         exit(EXIT_FAILURE);
     }
 
     //read command output
     *msg = (char *)(malloc(size_msg));
-    if (recv(fd, *msg, size_msg, 0) < 0) {
+    if (recv(fd, *msg, size_msg, 0) < 0) 
+    {
         perror("read msg error");
         exit(EXIT_FAILURE);
     }

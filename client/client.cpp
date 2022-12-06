@@ -63,8 +63,8 @@ int main()
     for (int i = 0; i < 19; ++i)
         init_s->checksum ^= ((uint8_t*)init_s)[i];
     
-    std::cout << "sleep 5 sec\n";
-    sleep(1);
+    // std::cout << "sleep 5 sec\n";
+    // sleep(5);
     send(sock, init_s, 20, 0);
 
     bool imei_flag;
@@ -77,12 +77,12 @@ int main()
         return 0;
     }
 
-    time_t upd_time = 414086872;
-    char* upd_f;
-    upd_f = (char*)malloc(1);
+    // time_t upd_time = 414086872;
+    // char* upd_f;
+    // upd_f = (char*)malloc(1);
     
-    read(sock, upd_f, 1);
-    std::cout << "upd flag = " << upd_f << "\n";
+    // read(sock, upd_f, 1);
+    // std::cout << "upd flag = " << upd_f << "\n";
 
     // closing the connected socket
     close(client_fd);
