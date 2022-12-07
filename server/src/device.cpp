@@ -12,7 +12,24 @@ Device::~Device()
     close(device_socket);
 }
 
-template <typename T> 
+bool Device::check_imei()
+{
+    json j = get_req(api + "?imei=" + imei);
+    // std::cout << std::setw(4) << j << std::endl;
+    
+    if (j.empty())
+    {
+        std::cout << "no data\n";
+        return false;
+    }
+        
+    upd_f = j[0].at("upd_f");
+    std::cout << upd_f << "\n";
+
+    return true; 
+}
+
+template <typename T>  
 bool Device::read_data(T data, size_t size)
 {
     // init poll struct
@@ -41,7 +58,7 @@ bool Device::init_dev_struct()
     init_struct* init_s;
     init_s = (init_struct*)malloc(sizeof(init_struct));
 
-    if(!read_data(init_s, 20))
+    if(!read_data(init_s, sizeof(init_struct)))
         return false;
 
     if (init_s->startword != 0x11223344)

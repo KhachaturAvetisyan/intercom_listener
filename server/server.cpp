@@ -8,9 +8,15 @@ void thread_func(int client_socket, int thread_num)
     if(!dev.init_dev_struct())
         return;
 
-    bool imei_flag = true;
-    send(client_socket, &imei_flag, 1, 0);
+    while(1)
+    {
+        if(!dev.check_imei())
+            return;
 
+        send(client_socket, &dev.upd_f, 1, 0);
+
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+    }
 }
 
 

@@ -51,10 +51,7 @@ int main()
     init_s = (init_struct*)malloc(sizeof(init_struct));
     init_s->startword = 0x11223344;
     
-    const char* str = "862770041752523";
-    // const char* str = "245189011584231";
-    // const char* str = "771596412074913";
-    // const char* str = "999999999999999";
+    const char* str = "767738917568351";
 
     for (int i = 0; i < 15; ++i)
         init_s->imei[i] = str[i];
@@ -68,8 +65,12 @@ int main()
     send(sock, init_s, 20, 0);
 
     bool imei_flag;
-    read(sock, &imei_flag, 1);
-    std::cout << imei_flag << "\n";
+
+    while(1)
+    {
+        read(sock, &imei_flag, 1);
+        std::cout << imei_flag << "\n";
+    }
 
     if (!imei_flag)
     {
