@@ -1,5 +1,5 @@
-# include "serv_include.h"
-# include "device.h"
+# include "includes/serv_include.h"
+# include "includes/device.h"
 
 
 void thread_func(int client_socket)

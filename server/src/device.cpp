@@ -1,4 +1,4 @@
-# include "device.h"
+# include "../includes/device.h"
 
 Device::Device(int dev_sock)
 {

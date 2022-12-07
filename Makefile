@@ -1,17 +1,34 @@
-# MYSQL_CONCPP_DIR = /usr
-# CPPFLAGS = -I $(MYSQL_CONCPP_DIR)/include/cppconn -L $(MYSQL_CONCPP_DIR)/lib
-LDLIBS = -lcurl -lpthread
-# CXXFLAGS = -std=c++11
+CC = g++
+CFLAGS = -lcurl
+
+# LDLIBS = -lcurl -lpthread
+
 CLIENT_DIR = client/
 SERVER_DIR = server/
 
-all: server.out client.out
+OBJ_DIR = build/
+SERV_SRC_DIR = $(SERVER_DIR)src/
+SERV_INCLUDE = -I $(SERVER_DIR)includes/
 
-server.out : $(SERVER_DIR)server.cpp $(SERVER_DIR)device.cpp
-	g++ $^ $(LDLIBS) -o $@
+SERV_SRC = $(wildcard $(SERV_SRC_DIR)*.cpp)
+SERV_OBJ = $(patsubst %.cpp, $(OBJ_DIR)%.o, $(notdir $(SERV_SRC)))
+
+all: make_dir server.out client.out
+
+make_dir : 
+	mkdir -p $(OBJ_DIR)
+
+server.out :  $(OBJ_DIR)server.o $(SERV_OBJ)
+	$(CC) $(SERV_INCLUDE) $^ $(CFLAGS) -o $@
+
+$(OBJ_DIR)%.o : $(SERV_SRC_DIR)%.cpp
+	$(CC) -c $< -o $@
+
+$(OBJ_DIR)server.o : $(SERVER_DIR)server.cpp
+	$(CC) -c $^ -o $@
 
 client.out : $(CLIENT_DIR)client.cpp
-	g++ $^ -o $@
+	$(CC) $^ -o $@
 
 clean:
-	rm *.out
+	rm -rf *.out $(OBJ_DIR)
