@@ -2,9 +2,9 @@
 # include "includes/device.h"
 
 
-void thread_func(int client_socket)
+void thread_func(int client_socket, int thread_num)
 {
-    Device dev(client_socket);
+    Device dev(client_socket, thread_num);
     if(!dev.init_dev_struct())
         return;
 
@@ -51,6 +51,8 @@ int main()
     std::cout << "binding access!\n";
     std::vector<std::thread> threads;
 
+    int count = 0;
+
     while(1)
     {
         std::cout << "listening\n";
@@ -67,7 +69,7 @@ int main()
             exit(EXIT_FAILURE);
         }
 
-        threads.push_back(std::thread(thread_func, new_socket));
+        threads.push_back(std::thread(thread_func, new_socket, count++));
 
     }
 

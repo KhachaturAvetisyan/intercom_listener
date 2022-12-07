@@ -20,10 +20,8 @@ make_dir :
 
 server.out :  $(OBJ_DIR)server.o $(SERV_OBJ)
 	$(CC) $(SERV_INCLUDE) $^ $(CFLAGS) -o $@
-
 $(OBJ_DIR)%.o : $(SERV_SRC_DIR)%.cpp
 	$(CC) -c $< -o $@
-
 $(OBJ_DIR)server.o : $(SERVER_DIR)server.cpp
 	$(CC) -c $^ -o $@
 

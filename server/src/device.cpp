@@ -1,8 +1,9 @@
 # include "../includes/device.h"
 
-Device::Device(int dev_sock)
+Device::Device(int dev_sock, int thr_num)
 {
     device_socket = dev_sock;
+    thread_num = thr_num;
 }
 
 Device::~Device()
