@@ -62,13 +62,21 @@ int main()
     
     // std::cout << "sleep 5 sec\n";
     // sleep(5);
-    send(sock, init_s, 20, 0);
+    if(send(sock, init_s, 20, 0) < 0)
+    {
+        perror("send error");
+        exit(EXIT_FAILURE);
+    }
 
     bool imei_flag;
 
     while(1)
     {
-        read(sock, &imei_flag, 1);
+        if(read(sock, &imei_flag, 1) < 0)
+        {
+            perror("read error");
+            exit(EXIT_FAILURE);
+        }
         std::cout << imei_flag << "\n";
     }
 

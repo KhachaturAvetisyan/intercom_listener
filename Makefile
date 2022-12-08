@@ -13,6 +13,7 @@ SERV_INCLUDE = -I $(SERVER_DIR)includes/
 SERV_SRC = $(wildcard $(SERV_SRC_DIR)*.cpp)
 SERV_OBJ = $(patsubst %.cpp, $(OBJ_DIR)%.o, $(notdir $(SERV_SRC)))
 
+
 all: make_dir server.out client.out
 
 make_dir : 
@@ -25,8 +26,10 @@ $(OBJ_DIR)%.o : $(SERV_SRC_DIR)%.cpp
 $(OBJ_DIR)server.o : $(SERVER_DIR)server.cpp
 	$(CC) -c $^ -o $@
 
-client.out : $(CLIENT_DIR)client.cpp
+client.out : $(OBJ_DIR)client.o
 	$(CC) $^ -o $@
+$(OBJ_DIR)client.o : $(CLIENT_DIR)client.cpp
+	$(CC) -c $^ -o $@
 
 clean:
 	rm -rf *.out $(OBJ_DIR)

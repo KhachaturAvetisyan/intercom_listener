@@ -2,9 +2,9 @@
 # include "includes/device.h"
 
 
-void thread_func(int client_socket, int thread_num)
+void thread_func(int client_socket)
 {
-    Device dev(client_socket, thread_num);
+    Device dev(client_socket);
     if(!dev.init_dev_struct())
         return;
 
@@ -14,6 +14,12 @@ void thread_func(int client_socket, int thread_num)
             return;
 
         send(client_socket, &dev.upd_f, 1, 0);
+
+        // if(dev.upd_f)
+        // {
+        //     if(!dev.send_rfid_list())
+        //         return;
+        // }
 
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }
@@ -57,8 +63,6 @@ int main()
     std::cout << "binding access!\n";
     std::vector<std::thread> threads;
 
-    int count = 0;
-
     while(1)
     {
         std::cout << "listening\n";
@@ -75,7 +79,7 @@ int main()
             exit(EXIT_FAILURE);
         }
 
-        threads.push_back(std::thread(thread_func, new_socket, count++));
+        threads.push_back(std::thread(thread_func, new_socket));
 
     }
 
