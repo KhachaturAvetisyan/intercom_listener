@@ -52,6 +52,7 @@ int main()
     init_s->startword = 0x11223344;
     
     const char* str = "767738917568351";
+    // const char* str = "859038861542972";
 
     for (int i = 0; i < 15; ++i)
         init_s->imei[i] = str[i];
@@ -80,18 +81,11 @@ int main()
         std::cout << imei_flag << "\n";
     }
 
-    if (!imei_flag)
-    {
-        close(client_fd);
-        return 0;
-    }
-
-    // time_t upd_time = 414086872;
-    // char* upd_f;
-    // upd_f = (char*)malloc(1);
-    
-    // read(sock, upd_f, 1);
-    // std::cout << "upd flag = " << upd_f << "\n";
+    // if (!imei_flag)
+    // {
+    //     close(client_fd);
+    //     return 0;
+    // }
 
     // closing the connected socket
     close(client_fd);

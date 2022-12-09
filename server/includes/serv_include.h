@@ -15,6 +15,13 @@
 # include <poll.h>
 # include <chrono>
 
+// http API
+#include <pistache/endpoint.h>
+#include <pistache/http.h>
+#include <pistache/router.h>
+
+#include "rapidjson/document.h"
+
 // # include "../utils/send_read.cpp"
 
 // curl & json includes
@@ -22,6 +29,7 @@
 # include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
+using namespace Pistache;
 
 # define PORT 8080
 
@@ -32,7 +40,7 @@ typedef struct
   uint8_t checksum;
 }init_struct;
 
-json post_req(std::string url, json post);
-json get_req(std::string url);
+void http_serv();
+void socket_serv();
 
 # endif

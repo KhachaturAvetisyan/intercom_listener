@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -lcurl
+CFLAGS = -lcurl -lpistache
 
 # LDLIBS = -lcurl -lpthread
 
