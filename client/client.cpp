@@ -7,6 +7,7 @@
 # include <unistd.h>
 # include <stdlib.h>
 # include <ctime>
+# include <poll.h>
 
 // # include "../utils/send_read.cpp"
 
@@ -17,7 +18,6 @@ typedef struct
 {
   uint32_t startword;
   char imei[15];
-  uint8_t checksum;
 }init_struct;
 
 int main()
@@ -49,17 +49,13 @@ int main()
 
     init_struct* init_s;
     init_s = (init_struct*)malloc(sizeof(init_struct));
-    init_s->startword = 0x11223344;
+    init_s->startword = 0xFE;
     
-    const char* str = "767738917568351";
-    // const char* str = "859038861542972";
+    // const char* str = "767738917568351";
+    const char* str = "859038861542972";
 
     for (int i = 0; i < 15; ++i)
         init_s->imei[i] = str[i];
-
-    init_s->checksum = 0;
-    for (int i = 0; i < 19; ++i)
-        init_s->checksum ^= ((uint8_t*)init_s)[i];
     
     // std::cout << "sleep 5 sec\n";
     // sleep(5);
@@ -69,23 +65,32 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    bool imei_flag;
+    struct pollfd mypoll = { sock, POLLIN|POLLPRI };
+    uint8_t status;
 
-    while(1)
+    if (poll(&mypoll, 1, 30000))
     {
-        if(read(sock, &imei_flag, 1) < 0)
+        if(read(sock, &status, 1) < 0)
         {
-            perror("read error");
+            perror("read msg error");
             exit(EXIT_FAILURE);
         }
-        std::cout << imei_flag << "\n";
+    }
+    else
+    {
+        std::cout << "read timeout\n";
+        return false;
     }
 
-    // if (!imei_flag)
-    // {
-    //     close(client_fd);
-    //     return 0;
-    // }
+    if (status != 0x01)
+    {
+        std::cout << "status is : error\n";
+        close(client_fd);
+        return 0;
+    }
+    
+    std::cout << "status is : OK\n";
+
 
     // closing the connected socket
     close(client_fd);

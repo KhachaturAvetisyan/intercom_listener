@@ -31,16 +31,13 @@
 using json = nlohmann::json;
 using namespace Pistache;
 
-# define PORT 8080
-
 typedef struct 
 {
   uint32_t startword;
   char imei[15];
-  uint8_t checksum;
 }init_struct;
 
-void http_serv();
-void socket_serv();
+void http_serv(int port_);
+void socket_serv(int port);
 
 # endif

@@ -9,7 +9,7 @@ Device::~Device()
     close(device_socket);
 }
 
-bool Device::check_imei()
+bool Device::Get_device_status()
 {
     json j = get_req(api + "?imei=" + imei);
     // std::cout << std::setw(4) << j << std::endl;
@@ -19,9 +19,6 @@ bool Device::check_imei()
         std::cout << "no data\n";
         return false;
     }
-        
-    upd_f = j[0].at("upd_f");
-    std::cout << upd_f << "\n";
 
     return true; 
 }
@@ -49,6 +46,30 @@ bool Device::read_data(T data, size_t size)
     return true;
 }
 
+template <typename T>  
+bool Device::send_data(T data, size_t size)
+{
+    if(send(device_socket, &data, size, 0) < 0)
+    {
+        perror("send error");
+        return false;
+    }
+
+    return true;
+}
+void Device::send_status(uint8_t status)
+{
+    send_data(status, 1);
+}
+
+bool Device::read_status()
+{
+    uint8_t status;
+    read_data(status, 1);
+
+    return status == 0x01 ? true : false;
+}
+
 bool Device::init_dev_struct()
 {
     // struct init
@@ -58,19 +79,9 @@ bool Device::init_dev_struct()
     if(!read_data(init_s, sizeof(init_struct)))
         return false;
 
-    if (init_s->startword != 0x11223344)
+    if (init_s->startword != 0xFE)
     {
         std::cout << "start word error\n";
-        return false;
-    }
-    
-    uint8_t loc_checksum = 0;
-    for (int i = 0; i < 19; ++i)
-        loc_checksum ^= ((uint8_t*)init_s)[i];
-
-    if (loc_checksum != init_s->checksum)
-    {
-        std::cout << "checksum error\n";
         return false;
     }
 
