@@ -65,7 +65,7 @@ void Device::send_status(uint8_t status)
 bool Device::read_status()
 {
     uint8_t status;
-    read_data(status, 1);
+    read_data(&status, 1);
 
     return status == 0x01 ? true : false;
 }

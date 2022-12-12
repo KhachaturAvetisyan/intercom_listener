@@ -5,7 +5,6 @@
 void dev_thread(int client_socket)
 {
     Device dev(client_socket);
-
     
     if(!dev.init_dev_struct())
     {
@@ -14,27 +13,6 @@ void dev_thread(int client_socket)
     }
 
     dev.send_status(0x01);
-    
-
-    // while(1)
-    // {
-    //     if(!dev.check_imei())
-    //         return;
-
-    //     if(send(client_socket, &dev.upd_f, 1, 0) < 0)
-    //     {
-    //         perror("send client upd_f");
-    //         return;
-    //     }
-
-    //     // if(dev.upd_f)
-    //     // {
-    //     //     if(!dev.send_rfid_list())
-    //     //         return;
-    //     // }
-
-    //     std::this_thread::sleep_for(std::chrono::seconds(5));
-    // }
 }
 
 void socket_serv(int port)
@@ -103,8 +81,21 @@ void echo(const Rest::Request& req, Http::ResponseWriter resp)
 {
     rapidjson::Document doc;
     doc.Parse(req.body().c_str());
-    // std::string responseString = doc.HasMember("text") ? doc["text"].GetString() : "No text parameter supplied in JSON:\n" + req.body();
-    resp.send(Http::Code::Ok, "OK");
+
+    std::string responseString;
+
+    if(doc.HasMember("imei") && doc.HasMember("updtime_NFC") && doc.HasMember("updtime_PIN")) 
+    {
+        responseString = "OK";
+        std::cout << "imei is : " << doc["imei"].GetString() << "\n";
+        std::cout << "updtime_NFC is : " << doc["updtime_NFC"].GetInt() << "\n";
+        std::cout << "updtime_PIN is : " << doc["updtime_PIN"].GetInt() << "\n";
+    }
+    else
+        responseString = "No text parameter supplied in JSON:\n" + req.body();
+
+    std::cout << responseString << "\n";
+    resp.send(Http::Code::Ok, responseString);
 }
 
 void http_serv(int port_)
@@ -123,7 +114,7 @@ void http_serv(int port_)
 
     Routes::Post(router, "/echo", Routes::bind(&echo));
 
-    endpoint->setHandler(router.handler());
-    endpoint->serve();
+    // endpoint->setHandler(router.handler());
+    // endpoint->serve();
 
 }
