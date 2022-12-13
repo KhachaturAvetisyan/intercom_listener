@@ -16,7 +16,7 @@
 
 typedef struct 
 {
-  uint32_t startword;
+  uint8_t startword;
   char imei[15];
 }init_struct;
 

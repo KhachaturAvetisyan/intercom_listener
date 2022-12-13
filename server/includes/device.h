@@ -11,8 +11,8 @@ private:
     
     int device_socket;
     std::string imei;
-    int updtime_NFC;
-    int updtime_PIN;
+    uint32_t dev_updtime_NFC;
+    uint32_t dev_updtime_PIN;
 
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
     json post_req(std::string url, json post);
@@ -28,6 +28,9 @@ public:
     ~Device();
 
     bool init_dev_struct();
+    bool read_ping();
+    bool read_history();
+
     void send_status(uint8_t status);
     bool read_status();
 
@@ -36,7 +39,6 @@ public:
     bool Get_PIN_list();
     bool Post_device_event();
     bool Post_device_updtime();
-
 };
 
 # endif

@@ -13,6 +13,8 @@ void dev_thread(int client_socket)
     }
 
     dev.send_status(0x01);
+
+
 }
 
 void socket_serv(int port)
@@ -41,7 +43,7 @@ void socket_serv(int port)
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(port);
 
-    // Forcefully attaching socket to the port 8080
+    // Forcefully attaching socket to the port
     if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) 
     {
         perror("bind failed");
@@ -114,7 +116,7 @@ void http_serv(int port_)
 
     Routes::Post(router, "/echo", Routes::bind(&echo));
 
-    // endpoint->setHandler(router.handler());
-    // endpoint->serve();
+    endpoint->setHandler(router.handler());
+    endpoint->serve();
 
 }

@@ -1,14 +1,17 @@
 # include "../includes/device.h"
 
+// class constructor
 Device::Device(int dev_sock) : device_socket(dev_sock)
 {}
-
+// class destructor
 Device::~Device()
 {
     std::cout << "close client\n";
     close(device_socket);
 }
 
+
+// listener to server requests
 bool Device::Get_device_status()
 {
     json j = get_req(api + "?imei=" + imei);
@@ -23,6 +26,8 @@ bool Device::Get_device_status()
     return true; 
 }
 
+
+// helper functions
 template <typename T>  
 bool Device::read_data(T data, size_t size)
 {
@@ -34,7 +39,6 @@ bool Device::read_data(T data, size_t size)
         if(read(device_socket, data, size) < 0)
         {
             perror("read msg error");
-            exit(EXIT_FAILURE);
         }
     }
     else
@@ -57,6 +61,9 @@ bool Device::send_data(T data, size_t size)
 
     return true;
 }
+
+
+// status functions
 void Device::send_status(uint8_t status)
 {
     send_data(status, 1);
@@ -70,6 +77,8 @@ bool Device::read_status()
     return status == 0x01 ? true : false;
 }
 
+
+// listener to device send & read functions
 bool Device::init_dev_struct()
 {
     // struct init
@@ -94,6 +103,37 @@ bool Device::init_dev_struct()
     return true;
 }
 
+bool Device::read_ping()
+{
+    ping_struct* ping_s;
+    ping_s = (ping_struct*)malloc(sizeof(ping_struct));
+
+    if(!read_data(ping_s, sizeof(ping_struct)))
+        return false;
+    
+    dev_updtime_NFC = ping_s->updtime_NFC;
+    dev_updtime_PIN = ping_s->updtime_PIN;
+
+    free(ping_s);
+    return true;
+}
+
+bool Device::read_history()
+{
+    history_struct* history_s;
+    history_s - (history_struct*)malloc(sizeof(history_struct));
+
+    if(!read_data(history_s, sizeof(history_struct)))
+        return false;
+    
+
+
+    free(history_s);
+    return true;
+}
+
+
+// curl post & get request
 size_t Device::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
