@@ -26,6 +26,25 @@ bool Device::Get_device_status()
     return true; 
 }
 
+bool Device::Get_NFC_list()
+{
+
+}
+
+bool Device::Get_PIN_list()
+{
+
+}
+
+bool Device::Post_device_event()
+{
+
+}
+
+bool Device::Post_device_updtime()
+{
+
+}
 
 // helper functions
 template <typename T>  

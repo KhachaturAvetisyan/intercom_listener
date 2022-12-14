@@ -13,6 +13,7 @@ void dev_thread(int client_socket)
     }
 
     dev.send_status(0x01);
+    
 
 
 }
