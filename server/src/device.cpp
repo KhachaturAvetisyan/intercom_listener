@@ -14,14 +14,17 @@ Device::~Device()
 // listener to server requests
 bool Device::Get_device_status()
 {
-    json j = get_req(api + "?imei=" + imei);
+    json res = get_req(api + "?imei=" + imei);
     // std::cout << std::setw(4) << j << std::endl;
     
-    if (j.empty())
+    if (res.empty() || res.contains("updtime_NFS") || res.contains("updtime_PIN"))
     {
-        std::cout << "no data\n";
+        perror("Get_device_status response error");
         return false;
     }
+
+    serv_updtime_NFC = res.at("updtime_NFS");
+    serv_updtime_PIN = res.at("updtime_PIN");
 
     return true; 
 }
@@ -38,13 +41,45 @@ bool Device::Get_PIN_list()
 
 bool Device::Post_device_event()
 {
+    json req = 
+    {
+        {"imei", imei},
+        {"time", history_s->time},
+        {"type", history_s->type},
+        {"value", history_s->value}
+    };
 
+    std::string res = post_req(api + "", req);
+
+    if (res != "OK")
+    {
+        perror("Post_device_event response error");
+        return false;
+    }
+
+    return true;
 }
 
 bool Device::Post_device_updtime()
 {
+    json req = 
+    {
+        {"imei", imei},
+        {"updtime_NFC", dev_updtime_NFC},
+        {"updtime_PIN", dev_updtime_PIN}
+    };
 
+    std::string res = post_req(api + "", req);
+
+    if (res != "OK")
+    {
+        perror("Post_device_updtime response error");
+        return false;
+    }
+
+    return true;
 }
+
 
 // helper functions
 template <typename T>  
@@ -159,7 +194,7 @@ size_t Device::WriteCallback(void *contents, size_t size, size_t nmemb, void *us
     return size * nmemb;
 }
 
-json Device::post_req(std::string url, json post)
+std::string Device::post_req(std::string url, json post)
 {
   std::string post_str = to_string(post);
 
@@ -203,7 +238,7 @@ json Device::post_req(std::string url, json post)
 
   // std::cout << readBuffer << "\n";
 
-  return json::parse(readBuffer);
+  return readBuffer;
 }
 
 json Device::get_req(std::string url)

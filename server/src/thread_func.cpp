@@ -4,6 +4,7 @@
 
 void dev_thread(int client_socket)
 {
+    std::cout << "create new thread\n";
     Device dev(client_socket);
     
     if(!dev.init_dev_struct())
@@ -13,7 +14,7 @@ void dev_thread(int client_socket)
     }
 
     dev.send_status(0x01);
-    
+
 
 
 }

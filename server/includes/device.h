@@ -13,9 +13,13 @@ private:
     std::string imei;
     uint32_t dev_updtime_NFC;
     uint32_t dev_updtime_PIN;
+    uint32_t serv_updtime_NFC;
+    uint32_t serv_updtime_PIN;
+
+    history_struct* history_s;
 
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
-    json post_req(std::string url, json post);
+    std::string post_req(std::string url, json post);
     json get_req(std::string url);
 
     template <typename T> 

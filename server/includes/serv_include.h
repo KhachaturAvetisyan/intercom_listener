@@ -14,6 +14,7 @@
 # include <ctime>
 # include <poll.h>
 # include <chrono>
+# include <unordered_map>
 
 // http API
 #include <pistache/endpoint.h>
@@ -61,5 +62,7 @@ typedef struct
 // main servers thread functions
 void http_serv(int port_);
 void socket_serv(int port);
+
+// std::unordered_map<>
 
 # endif
