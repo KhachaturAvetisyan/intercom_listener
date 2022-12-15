@@ -15,7 +15,7 @@ Device::~Device()
 bool Device::Get_device_status()
 {
     json res = get_req(api + "?imei=" + imei);
-    // std::cout << std::setw(4) << j << std::endl;
+    std::cout << std::setw(4) << res << std::endl;
     
     if (res.empty() || res.contains("updtime_NFS") || res.contains("updtime_PIN"))
     {
@@ -194,15 +194,12 @@ bool Device::read_ping()
 
 bool Device::read_history()
 {
-    history_struct* history_s;
     history_s - (history_struct*)malloc(sizeof(history_struct));
 
     if(!read_data(history_s, sizeof(history_struct)))
         return false;
-    
 
-
-    free(history_s);
+    // free(history_s);
     return true;
 }
 

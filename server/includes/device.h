@@ -10,8 +10,6 @@ private:
     const std::string api = "https://api-generator.retool.com/lQk0Cx/data";
     
     int device_socket;
-    uint32_t dev_updtime_NFC = 0;
-    uint32_t dev_updtime_PIN = 0;
 
     history_struct* history_s;
     json NFT_list;
@@ -30,22 +28,33 @@ public:
     std::string imei;
     uint32_t serv_updtime_NFC = 0;
     uint32_t serv_updtime_PIN = 0;
+    uint32_t dev_updtime_NFC = 0;
+    uint32_t dev_updtime_PIN = 0;
 
+    // class constructor destructor
     Device(int dev_sock);
     ~Device();
 
+    // Device to listener read functions
     bool init_dev_struct();
     bool read_ping();
     bool read_history();
 
+    // send read status functions
     void send_status(uint8_t status);
     bool read_status();
 
+    // listener to server Post Get requests
     bool Get_device_status();
     bool Get_NFC_list();
     bool Get_PIN_list();
     bool Post_device_event();
     bool Post_device_updtime();
+
+    // listener to device requests
+    bool Request_for_update();
+    bool Data_Body();
+    bool separate_data_by_pakets();
 };
 
 # endif

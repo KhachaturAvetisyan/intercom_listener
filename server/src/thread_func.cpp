@@ -8,24 +8,57 @@ void dev_thread(int client_socket)
     std::cout << "create new thread\n";
     Device dev(client_socket);
     
-    if(!dev.init_dev_struct())
+    // Case #01 Device connection
+    if(!dev.init_dev_struct() || !dev.Get_device_status())
     {
         dev.send_status(0x00);
         return;
     }
-
     dev.send_status(0x01);
 
     device_map[dev.imei] = &dev;
 
-    while(1)
+    // Case #02 Ping from device
+    if(!dev.read_ping())
     {
-        std::cout << "serv_updtime_NFC : " << dev.serv_updtime_NFC << "\n";
-        std::cout << "serv_updtime_PIN : " << dev.serv_updtime_PIN << "\n";
-
-        sleep(5);
+        perror("read_ping error");
+        return;
     }
 
+    if(dev.serv_updtime_NFC != dev.dev_updtime_NFC)
+    {
+        // Case #03 Time competition for NFC is false
+        if(!dev.Get_NFC_list())
+        {
+            perror("Get_NFC_list error");
+            return;
+        }
+
+        if(!dev.separate_data_by_pakets())
+        {
+            perror("separate_data_by_pakets error");
+            return;
+        }
+
+        if(!dev.Request_for_update())
+        {
+            perror("Request_for_update error");
+            return;
+        }
+
+        if(!dev.read_status())
+        {
+            perror("read_status error");
+            return;
+        }
+
+
+    }
+
+    if(dev.serv_updtime_PIN != dev.dev_updtime_PIN)
+    {
+        // Case #04
+    }
 }
 
 void socket_serv(int port)
@@ -90,7 +123,7 @@ void socket_serv(int port)
 }
 
 
-void echo(const Rest::Request& req, Http::ResponseWriter resp) 
+void device_updt(const Rest::Request& req, Http::ResponseWriter resp) 
 {
     rapidjson::Document doc;
     doc.Parse(req.body().c_str());
@@ -98,15 +131,23 @@ void echo(const Rest::Request& req, Http::ResponseWriter resp)
     std::string responseString;
 
     if(doc.HasMember("imei") && doc.HasMember("updtime_NFC") && doc.HasMember("updtime_PIN")) 
-    {
-        responseString = "OK";
-        
+    {   
         std::cout << "imei is : " << doc["imei"].GetString() << "\n";
         std::cout << "updtime_NFC is : " << doc["updtime_NFC"].GetInt() << "\n";
         std::cout << "updtime_PIN is : " << doc["updtime_PIN"].GetInt() << "\n";
 
-        device_map[doc["imei"].GetString()]->serv_updtime_NFC = doc["updtime_NFC"].GetInt();
-        device_map[doc["imei"].GetString()]->serv_updtime_PIN = doc["updtime_PIN"].GetInt();
+        std::string imei = doc["imei"].GetString();
+
+        if(device_map.find(imei) != device_map.end())
+        {
+            device_map[imei]->serv_updtime_NFC = doc["updtime_NFC"].GetInt();
+            device_map[imei]->serv_updtime_PIN = doc["updtime_PIN"].GetInt();
+
+            responseString = "OK";
+        }
+        else
+            responseString = "imei in map has not exists";
+        
     }
     else
         responseString = "No text parameter supplied in JSON:\n" + req.body();
@@ -129,7 +170,7 @@ void http_serv(int port_)
 
     endpoint->init(opts);
 
-    Routes::Post(router, "/echo", Routes::bind(&echo));
+    Routes::Post(router, "/device_updt", Routes::bind(&device_updt));
 
     endpoint->setHandler(router.handler());
     endpoint->serve();
