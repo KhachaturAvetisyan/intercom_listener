@@ -14,6 +14,8 @@ private:
     uint32_t dev_updtime_PIN = 0;
 
     history_struct* history_s;
+    json NFT_list;
+    json PIN_list;
 
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
     std::string post_req(std::string url, json post);

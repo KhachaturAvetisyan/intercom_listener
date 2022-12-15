@@ -31,12 +31,32 @@ bool Device::Get_device_status()
 
 bool Device::Get_NFC_list()
 {
+    json res = get_req(api + "?imei=" + imei);
 
+    if(res.empty())
+    {
+        perror("Get_NFC_list response error");
+        return false;
+    }
+
+    NFT_list = res;
+
+    return true;
 }
 
 bool Device::Get_PIN_list()
 {
+    json res = get_req(api + "?imei=" + imei);
 
+    if(res.empty())
+    {
+        perror("Get_PIN_list response error");
+        return false;
+    }
+
+    PIN_list = res;
+
+    return true;
 }
 
 bool Device::Post_device_event()
