@@ -1,6 +1,7 @@
 # include "../includes/serv_include.h"
 # include "../includes/device.h"
 
+std::unordered_map<std::string, Device*> device_map;
 
 void dev_thread(int client_socket)
 {
@@ -15,7 +16,15 @@ void dev_thread(int client_socket)
 
     dev.send_status(0x01);
 
+    device_map[dev.imei] = &dev;
 
+    while(1)
+    {
+        std::cout << "serv_updtime_NFC : " << dev.serv_updtime_NFC << "\n";
+        std::cout << "serv_updtime_PIN : " << dev.serv_updtime_PIN << "\n";
+
+        sleep(5);
+    }
 
 }
 
@@ -91,9 +100,13 @@ void echo(const Rest::Request& req, Http::ResponseWriter resp)
     if(doc.HasMember("imei") && doc.HasMember("updtime_NFC") && doc.HasMember("updtime_PIN")) 
     {
         responseString = "OK";
+        
         std::cout << "imei is : " << doc["imei"].GetString() << "\n";
         std::cout << "updtime_NFC is : " << doc["updtime_NFC"].GetInt() << "\n";
         std::cout << "updtime_PIN is : " << doc["updtime_PIN"].GetInt() << "\n";
+
+        device_map[doc["imei"].GetString()]->serv_updtime_NFC = doc["updtime_NFC"].GetInt();
+        device_map[doc["imei"].GetString()]->serv_updtime_PIN = doc["updtime_PIN"].GetInt();
     }
     else
         responseString = "No text parameter supplied in JSON:\n" + req.body();

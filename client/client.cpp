@@ -59,7 +59,7 @@ int main()
     
     // std::cout << "sleep 5 sec\n";
     // sleep(5);
-    if(send(sock, init_s, 20, 0) < 0)
+    if(send(sock, init_s, 16, 0) < 0)
     {
         perror("send error");
         exit(EXIT_FAILURE);
@@ -91,6 +91,10 @@ int main()
     
     std::cout << "status is : OK\n";
 
+    while(1)
+    {
+        
+    }
 
     // closing the connected socket
     close(client_fd);

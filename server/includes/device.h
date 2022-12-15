@@ -10,11 +10,8 @@ private:
     const std::string api = "https://api-generator.retool.com/lQk0Cx/data";
     
     int device_socket;
-    std::string imei;
-    uint32_t dev_updtime_NFC;
-    uint32_t dev_updtime_PIN;
-    uint32_t serv_updtime_NFC;
-    uint32_t serv_updtime_PIN;
+    uint32_t dev_updtime_NFC = 0;
+    uint32_t dev_updtime_PIN = 0;
 
     history_struct* history_s;
 
@@ -28,6 +25,10 @@ private:
     bool send_data(T data, size_t size);
 
 public:
+    std::string imei;
+    uint32_t serv_updtime_NFC = 0;
+    uint32_t serv_updtime_PIN = 0;
+
     Device(int dev_sock);
     ~Device();
 

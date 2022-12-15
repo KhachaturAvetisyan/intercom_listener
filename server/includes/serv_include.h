@@ -16,12 +16,16 @@
 # include <chrono>
 # include <unordered_map>
 
-// http API
-#include <pistache/endpoint.h>
-#include <pistache/http.h>
-#include <pistache/router.h>
+// Device class
+// # include "device.h"
+// class Device;
 
-#include "rapidjson/document.h"
+// http API
+# include <pistache/endpoint.h>
+# include <pistache/http.h>
+# include <pistache/router.h>
+
+# include "rapidjson/document.h"
 
 // # include "../utils/send_read.cpp"
 
@@ -62,7 +66,5 @@ typedef struct
 // main servers thread functions
 void http_serv(int port_);
 void socket_serv(int port);
-
-// std::unordered_map<>
 
 # endif
