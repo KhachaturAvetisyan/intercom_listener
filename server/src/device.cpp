@@ -1,4 +1,4 @@
-# include "../includes/device.h"
+# include "../includes/serv_include.h"
 
 // class constructor
 Device::Device(int dev_sock) : device_socket(dev_sock)
@@ -8,6 +8,8 @@ Device::~Device()
 {
     std::cout << "close client\n";
     close(device_socket);
+
+    device_map.erase(imei);
 }
 
 

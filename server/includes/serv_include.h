@@ -16,10 +16,6 @@
 # include <chrono>
 # include <unordered_map>
 
-// Device class
-// # include "device.h"
-// class Device;
-
 // http API
 # include <pistache/endpoint.h>
 # include <pistache/http.h>
@@ -63,8 +59,12 @@ typedef struct
   uint16_t crc;
 }history_struct;
 
+# include "device.h"
+
 // main servers thread functions
 void http_serv(int port_);
 void socket_serv(int port);
+
+std::unordered_map<std::string, Device*> device_map;
 
 # endif

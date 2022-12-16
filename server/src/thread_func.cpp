@@ -1,7 +1,5 @@
 # include "../includes/serv_include.h"
-# include "../includes/device.h"
 
-std::unordered_map<std::string, Device*> device_map;
 
 void dev_thread(int client_socket)
 {
