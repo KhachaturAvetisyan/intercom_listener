@@ -1,13 +1,13 @@
 # ifndef DEVICE_HEADER
 # define DEVICE_HEADER
 
-# include "serv_include.h"
+# include "serv_include.hpp"
 
 class Device
 {
 private:
     const int read_timelimit = 30 * 1000;
-    const std::string api = "https://api-generator.retool.com/lQk0Cx/data";
+    const std::string api = "http://localhost:9090/";
     
     int device_socket;
 

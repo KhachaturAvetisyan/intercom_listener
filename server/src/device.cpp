@@ -1,4 +1,4 @@
-# include "../includes/serv_include.h"
+# include "../includes/serv_include.hpp"
 
 // class constructor
 Device::Device(int dev_sock) : device_socket(dev_sock)
@@ -16,8 +16,8 @@ Device::~Device()
 // listener to server requests
 bool Device::Get_device_status()
 {
-    json res = get_req(api + "?imei=" + imei);
-    std::cout << std::setw(4) << res << std::endl;
+    json res = get_req(api + "imei/" + imei);
+    // std::cout << std::setw(4) << res << std::endl;
     
     if (res.empty() || res.contains("updtime_NFS") || res.contains("updtime_PIN"))
     {

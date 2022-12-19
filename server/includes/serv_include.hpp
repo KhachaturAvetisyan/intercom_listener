@@ -59,12 +59,12 @@ typedef struct
   uint16_t crc;
 }history_struct;
 
-# include "device.h"
+# include "device.hpp"
 
 // main servers thread functions
 void http_serv(int port_);
 void socket_serv(int port);
 
-std::unordered_map<std::string, Device*> device_map;
+extern std::unordered_map<std::string, Device*> device_map;
 
-# endif
+# endif // SERV_HEADER

@@ -14,10 +14,12 @@ SERV_SRC = $(wildcard $(SERV_SRC_DIR)*.cpp)
 SERV_OBJ = $(patsubst %.cpp, $(OBJ_DIR)%.o, $(notdir $(SERV_SRC)))
 
 
-all: make_dir server.out client.out
+all: make_dir server.out client.out api.out api_curl.out
+
 
 make_dir : 
 	mkdir -p $(OBJ_DIR)
+
 
 server.out :  $(OBJ_DIR)server.o $(SERV_OBJ)
 	$(CC) $(SERV_INCLUDE) $^ $(CFLAGS) -o $@
@@ -26,10 +28,24 @@ $(OBJ_DIR)%.o : $(SERV_SRC_DIR)%.cpp
 $(OBJ_DIR)server.o : $(SERVER_DIR)server.cpp
 	$(CC) -c $^ -o $@
 
+
 client.out : $(OBJ_DIR)client.o
 	$(CC) $^ -o $@
 $(OBJ_DIR)client.o : $(CLIENT_DIR)client.cpp
 	$(CC) -c $^ -o $@
+
+
+api.out: $(OBJ_DIR)api.o
+	$(CC) $^ -lpistache -o $@
+$(OBJ_DIR)api.o: api_server/api.cpp
+	$(CC) -c $^ -o $@
+
+
+api_curl.out: $(OBJ_DIR)api_curl.o
+	$(CC) $^ -lcurl -o $@
+$(OBJ_DIR)api_curl.o: api_server/api_curl.cpp
+	$(CC) -c $^ -o $@
+
 
 clean:
 	rm -rf *.out $(OBJ_DIR)

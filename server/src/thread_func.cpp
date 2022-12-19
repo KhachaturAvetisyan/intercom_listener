@@ -1,4 +1,4 @@
-# include "../includes/serv_include.h"
+# include "../includes/serv_include.hpp" 
 
 
 void dev_thread(int client_socket)
@@ -14,49 +14,55 @@ void dev_thread(int client_socket)
     }
     dev.send_status(0x01);
 
+    std::cout << dev.serv_updtime_NFC << "\n";
+    std::cout << dev.serv_updtime_PIN << "\n";
+
     device_map[dev.imei] = &dev;
 
-    // Case #02 Ping from device
-    if(!dev.read_ping())
-    {
-        perror("read_ping error");
-        return;
-    }
+    // while(1)
+    // {
+    //     // Case #02 Ping from device
+    //     if(!dev.read_ping())
+    //     {
+    //         perror("read_ping error");
+    //         return;
+    //     }
 
-    if(dev.serv_updtime_NFC != dev.dev_updtime_NFC)
-    {
-        // Case #03 Time competition for NFC is false
-        if(!dev.Get_NFC_list())
-        {
-            perror("Get_NFC_list error");
-            return;
-        }
+    //     if(dev.serv_updtime_NFC != dev.dev_updtime_NFC)
+    //     {
+    //         // Case #03 Time competition for NFC is false
+    //         if(!dev.Get_NFC_list())
+    //         {
+    //             perror("Get_NFC_list error");
+    //             return;
+    //         }
 
-        if(!dev.separate_data_by_pakets())
-        {
-            perror("separate_data_by_pakets error");
-            return;
-        }
+    //         if(!dev.separate_data_by_pakets())
+    //         {
+    //             perror("separate_data_by_pakets error");
+    //             return;
+    //         }
 
-        if(!dev.Request_for_update())
-        {
-            perror("Request_for_update error");
-            return;
-        }
+    //         if(!dev.Request_for_update())
+    //         {
+    //             perror("Request_for_update error");
+    //             return;
+    //         }
 
-        if(!dev.read_status())
-        {
-            perror("read_status error");
-            return;
-        }
+    //         if(!dev.read_status())
+    //         {
+    //             perror("read_status error");
+    //             return;
+    //         }
 
 
-    }
+    //     }
 
-    if(dev.serv_updtime_PIN != dev.dev_updtime_PIN)
-    {
-        // Case #04
-    }
+    //     if(dev.serv_updtime_PIN != dev.dev_updtime_PIN)
+    //     {
+    //         // Case #04
+    //     }
+    // }
 }
 
 void socket_serv(int port)
