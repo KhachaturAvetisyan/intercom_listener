@@ -3,3 +3,5 @@
 build
 server.out
 client.out
+api_curl.out
+api.out

@@ -1,7 +1,7 @@
 # include "../includes/serv_include.hpp"
 
 // class constructor
-Device::Device(int dev_sock) : device_socket(dev_sock)
+Device::Device(int dev_sock, std::unordered_map<std::string, Device*> *dev_map) : device_socket(dev_sock), device_map(dev_map)
 {}
 // class destructor
 Device::~Device()
@@ -9,7 +9,7 @@ Device::~Device()
     std::cout << "close client\n";
     close(device_socket);
 
-    device_map.erase(imei);
+    device_map->erase(imei);
 }
 
 

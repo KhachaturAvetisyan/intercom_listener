@@ -1,10 +1,11 @@
 # include "../includes/serv_include.hpp" 
 
+std::unordered_map<std::string, Device*> device_map;
 
 void dev_thread(int client_socket)
 {
     std::cout << "create new thread\n";
-    Device dev(client_socket);
+    Device dev(client_socket, &device_map);
     
     // Case #01 Device connection
     if(!dev.init_dev_struct() || !dev.Get_device_status())
@@ -17,7 +18,7 @@ void dev_thread(int client_socket)
     std::cout << dev.serv_updtime_NFC << "\n";
     std::cout << dev.serv_updtime_PIN << "\n";
 
-    device_map[dev.imei] = &dev;
+    device_map.insert({dev.imei, &dev});
 
     // while(1)
     // {

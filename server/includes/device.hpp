@@ -10,6 +10,7 @@ private:
     const std::string api = "http://localhost:9090/";
     
     int device_socket;
+    std::unordered_map<std::string, Device*> *device_map;
 
     history_struct* history_s;
     json NFT_list;
@@ -32,7 +33,7 @@ public:
     uint32_t dev_updtime_PIN = 0;
 
     // class constructor destructor
-    Device(int dev_sock);
+    Device(int dev_sock, std::unordered_map<std::string, Device*> *device_map);
     ~Device();
 
     // Device to listener read functions

@@ -65,6 +65,4 @@ typedef struct
 void http_serv(int port_);
 void socket_serv(int port);
 
-extern std::unordered_map<std::string, Device*> device_map;
-
 # endif // SERV_HEADER
