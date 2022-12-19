@@ -16,12 +16,24 @@ Device::~Device()
 // listener to server requests
 bool Device::Get_device_status()
 {
-    json res = get_req(api + "imei/" + imei);
-    // std::cout << std::setw(4) << res << std::endl;
+    std::string url = api + "device_status/" + imei;
+    std::cout << "url is : " << url << "\n";
+    json res = get_req(url);
+    std::cout << std::setw(4) << res << std::endl;
     
-    if (res.empty() || res.contains("updtime_NFS") || res.contains("updtime_PIN"))
+    if (res.empty())
     {
-        perror("Get_device_status response error");
+        perror("Get_device_status response is empty");
+        return false;
+    }
+    else if(!res.contains("updtime_NFS"))
+    {
+        perror("Get_device_status response not contains updtime_NFS");
+        return false;
+    }
+    else if(!res.contains("updtime_PIN"))
+    {
+        perror("Get_device_status response not contains updtime_PIN");
         return false;
     }
 

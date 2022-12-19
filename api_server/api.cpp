@@ -58,6 +58,7 @@ void device_status(const Rest::Request& req, Http::ResponseWriter resp)
     else
         restext = "No parameter supplied.";
 
+    std::cout << restext << "\n";
     resp.send(Http::Code::Ok, restext);
 }
 

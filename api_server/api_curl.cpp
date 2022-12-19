@@ -89,7 +89,7 @@ int main(void)
 {
   json req = {{"imei", "859038861542972"}, {"updtime_NFC", 131345}, {"updtime_PIN", 456457}};
 
-  // json j2 = get_req("http://localhost:9900/device_status/859038861542972");
+  // json j2 = get_req("http://localhost:9090/device_status/859038861542972");
   std::cout << post_req("http://localhost:9900/device_updt", req) << "\n";
 
   // std::cout << std::setw(4) << j_complete << std::endl;
