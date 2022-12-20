@@ -13,7 +13,7 @@ private:
     std::unordered_map<std::string, Device*> *device_map;
 
     history_struct* history_s;
-    json NFT_list;
+    json NFC_list;
     json PIN_list;
 
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
@@ -37,13 +37,13 @@ public:
     ~Device();
 
     // Device to listener read functions
-    bool init_dev_struct();
+    bool hand_shake();
     bool read_ping();
     bool read_history();
 
     // send read status functions
     void send_status(uint8_t status);
-    bool read_status();
+    uint8_t read_byte();
 
     // listener to server Post Get requests
     bool Get_device_status();

@@ -20,6 +20,26 @@ typedef struct
   char imei[15];
 }init_struct;
 
+typedef struct
+{
+  uint8_t work_mode;
+  uint16_t firmware_version;
+  uint8_t sim_info;
+  uint8_t con_quality_sim_1;
+  uint8_t con_quality_sim_2;
+  uint16_t battery_voltage;
+  uint32_t updtime_NFC;
+  uint32_t updtime_PIN;
+}ping_struct;
+
+typedef struct
+{
+  uint32_t time;
+  uint8_t type; // 0x00 - NFC & 0x01 - PIN
+  uint64_t value;
+  uint16_t crc;
+}history_struct;
+
 int main()
 {
     int sock = 0, valread, client_fd;

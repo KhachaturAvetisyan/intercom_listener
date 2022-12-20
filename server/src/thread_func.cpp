@@ -8,62 +8,89 @@ void dev_thread(int client_socket)
     Device dev(client_socket, &device_map);
     
     // Case #01 Device connection
-    if(!dev.init_dev_struct() || !dev.Get_device_status())
+    if(dev.read_byte() != 0xFE)
     {
+        perror("read start byte error");
+        dev.send_status(0x00);
+        return;
+    }
+    if(!dev.hand_shake())
+    {
+        perror("hand shake error");
+        dev.send_status(0x00);
+        return;
+    }
+    if(!dev.Get_device_status())
+    {
+        perror("Get device status error");
         dev.send_status(0x00);
         return;
     }
     dev.send_status(0x01);
 
-    std::cout << dev.serv_updtime_NFC << "\n";
-    std::cout << dev.serv_updtime_PIN << "\n";
-
     device_map.insert({dev.imei, &dev});
 
-    // while(1)
-    // {
-    //     // Case #02 Ping from device
-    //     if(!dev.read_ping())
-    //     {
-    //         perror("read_ping error");
-    //         return;
-    //     }
+    // std::cout << dev.serv_updtime_NFC << "\n";
+    // std::cout << dev.serv_updtime_PIN << "\n";
 
-    //     if(dev.serv_updtime_NFC != dev.dev_updtime_NFC)
-    //     {
-    //         // Case #03 Time competition for NFC is false
-    //         if(!dev.Get_NFC_list())
-    //         {
-    //             perror("Get_NFC_list error");
-    //             return;
-    //         }
+    uint8_t startbyte;
+    while(1)
+    {
+        startbyte = dev.read_byte();
+        if(startbyte == 0xFA)
+        {
+            // Case #02 Ping from device
+            if(!dev.read_ping())
+            {
+                perror("Ping Was not reading");
+                return ;
+            }
+            
+            if(dev.serv_updtime_NFC != dev.dev_updtime_NFC)
+            {
+                // Case #03 Time competition for NFC is false
+                if(!dev.Get_NFC_list())
+                {
+                    perror("Get_NFC_list error");
+                    return;
+                }
 
-    //         if(!dev.separate_data_by_pakets())
-    //         {
-    //             perror("separate_data_by_pakets error");
-    //             return;
-    //         }
+                if(!dev.separate_data_by_pakets())
+                {
+                    perror("separate_data_by_pakets error");
+                    return;
+                }
 
-    //         if(!dev.Request_for_update())
-    //         {
-    //             perror("Request_for_update error");
-    //             return;
-    //         }
+                if(!dev.Request_for_update())
+                {
+                    perror("Request_for_update error");
+                    return;
+                }
 
-    //         if(!dev.read_status())
-    //         {
-    //             perror("read_status error");
-    //             return;
-    //         }
+                if(!dev.read_status())
+                {
+                    perror("read_status error");
+                    return;
+                }
 
 
-    //     }
+            }
 
-    //     if(dev.serv_updtime_PIN != dev.dev_updtime_PIN)
-    //     {
-    //         // Case #04
-    //     }
-    // }
+            if(dev.serv_updtime_PIN != dev.dev_updtime_PIN)
+            {
+                // Case #04
+            }
+        }
+        if(startbyte == 0xFB)
+        {
+
+        }
+        else
+        {
+            perror("read start byte error");
+            return;
+        }
+    }
 }
 
 void socket_serv(int port)
@@ -126,7 +153,6 @@ void socket_serv(int port)
     shutdown(server_fd, SHUT_RDWR);
 
 }
-
 
 void device_updt(const Rest::Request& req, Http::ResponseWriter resp) 
 {

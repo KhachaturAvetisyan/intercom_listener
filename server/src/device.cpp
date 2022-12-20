@@ -157,37 +157,22 @@ void Device::send_status(uint8_t status)
     send_data(status, 1);
 }
 
-bool Device::read_status()
+uint8_t Device::read_byte()
 {
-    uint8_t status;
-    read_data(&status, 1);
-
-    return status == 0x01 ? true : false;
+    uint8_t data;
+    if(!read_data(&data, 1))
+        return 0x00;
+    return data;
 }
 
 
 // listener to device send & read functions
-bool Device::init_dev_struct()
+bool Device::hand_shake()
 {
-    // struct init
-    init_struct* init_s;
-    init_s = (init_struct*)malloc(sizeof(init_struct));
-
-    if(!read_data(init_s, sizeof(init_struct)))
+    if(!read_data(&imei, 15))
         return false;
-
-    if (init_s->startword != 0xFE)
-    {
-        std::cout << "start word error\n";
-        return false;
-    }
-
-    for (int i = 0; i < 15; ++i)
-        imei += init_s->imei[i];
 
     std::cout << imei << "\n";
-
-    free(init_s);
     return true;
 }
 
@@ -296,3 +281,4 @@ json Device::get_req(std::string url)
 
   return json::parse(readBuffer);
 }
+
