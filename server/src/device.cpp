@@ -287,18 +287,38 @@ json Device::get_req(std::string url)
 
 bool Device::separate_data_by_pakets()
 {
-    if(1)
+    if(NFC_list.size() > 0)
     {
-        long long *nfcs;
         int size = NFC_list.size();
         nfcs = (long long *)malloc(sizeof(long long*) * size);
         std::string nfc;
         int i = -1;
         while(++i < size)
             nfcs[i] = NFC_list[i].get<long long>();
-        
         return (true);
     }
-
     return (false);
+}
+
+bool Device::Request_for_update(uint8_t req_code)
+{
+    if(!nfcs[0])
+        return (false);
+    if(req_code == 0X00)
+    {
+        int c = -1;
+        //request for update NFC list
+        std::cout << "Update NFC List" << std::endl;
+          while(++c < NFC_list.size())
+            std::cout << nfcs[c] << std::endl;
+    }
+    else if(req_code == 0x01)
+    {
+        //request for update PIN list
+        std::cout << "Update PIN List" << std::endl;
+
+    }
+    else
+        return (false);
+    return (true);
 }

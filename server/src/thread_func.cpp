@@ -56,11 +56,11 @@ void dev_thread(int client_socket)
                     perror("separate_data_by_pakets error");
                     return;
                 }
-                // if(!dev.Request_for_update())
-                // {
-                //     perror("Request_for_update error");
-                //     return;
-                // }
+                if(!dev.Request_for_update(0X00))
+                {
+                    perror("Request_for_update error");
+                    return;
+                }
                 startbyte = dev.read_byte();
                 if(startbyte == 0x00)
                 {

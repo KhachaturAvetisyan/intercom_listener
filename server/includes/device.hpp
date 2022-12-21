@@ -16,6 +16,7 @@ private:
     json NFC_list;
     json PIN_list;
 
+    long long *nfcs;
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
     std::string post_req(std::string url, json post);
     json get_req(std::string url);
@@ -54,9 +55,9 @@ public:
     bool Post_device_updtime();
 
     // listener to device requests
-    bool Request_for_update();
-    bool Data_Body();
     bool separate_data_by_pakets();
+    bool Request_for_update(uint8_t req_code);
+    // bool Data_Body();
 };
 
 # endif
