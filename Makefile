@@ -14,12 +14,13 @@ SERV_SRC = $(wildcard $(SERV_SRC_DIR)*.cpp)
 SERV_OBJ = $(patsubst %.cpp, $(OBJ_DIR)%.o, $(notdir $(SERV_SRC)))
 
 
-all: make_dir server.out client.out api.out api_curl.out
+all: make_dir server.out client.out
 
+
+api: make_dir api.out api_curl.out
 
 make_dir : 
 	mkdir -p $(OBJ_DIR)
-
 
 server.out :  $(OBJ_DIR)server.o $(SERV_OBJ)
 	$(CC) $(SERV_INCLUDE) $^ $(CFLAGS) -o $@

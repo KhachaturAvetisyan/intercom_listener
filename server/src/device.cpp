@@ -45,7 +45,8 @@ bool Device::Get_device_status()
 
 bool Device::Get_NFC_list()
 {
-    json res = get_req(api + "?imei=" + imei);
+    json res = get_req(api + "NFC_list/" + imei);
+    std::cout << std::setw(4) << res << std::endl;
 
     if(res.empty())
     {
@@ -53,7 +54,7 @@ bool Device::Get_NFC_list()
         return false;
     }
 
-    NFT_list = res;
+    NFC_list = res;
 
     return true;
 }
@@ -61,6 +62,7 @@ bool Device::Get_NFC_list()
 bool Device::Get_PIN_list()
 {
     json res = get_req(api + "?imei=" + imei);
+    std::cout << std::setw(4) << res << std::endl;
 
     if(res.empty())
     {
@@ -162,6 +164,7 @@ uint8_t Device::read_byte()
     uint8_t data;
     if(!read_data(&data, 1))
         return 0x00;
+    // std::cout << (data == 0xFE) << "\n";
     return data;
 }
 
@@ -169,31 +172,32 @@ uint8_t Device::read_byte()
 // listener to device send & read functions
 bool Device::hand_shake()
 {
-    if(!read_data(&imei, 15))
+    char buffer[15];
+    if(!read_data(&buffer, 15))
         return false;
 
+    imei = buffer;
     std::cout << imei << "\n";
     return true;
 }
 
 bool Device::read_ping()
 {
-    ping_struct* ping_s;
+    ping_struct *ping_s;
+
     ping_s = (ping_struct*)malloc(sizeof(ping_struct));
 
     if(!read_data(ping_s, sizeof(ping_struct)))
         return false;
-    
     dev_updtime_NFC = ping_s->updtime_NFC;
     dev_updtime_PIN = ping_s->updtime_PIN;
-
     free(ping_s);
     return true;
 }
 
 bool Device::read_history()
 {
-    history_s - (history_struct*)malloc(sizeof(history_struct));
+    history_s = (history_struct*)malloc(sizeof(history_struct));
 
     if(!read_data(history_s, sizeof(history_struct)))
         return false;
@@ -275,10 +279,26 @@ json Device::get_req(std::string url)
     long http_code = 0;
     curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
     std::cout << "code status is : " << http_code << "\n";
-
     curl_easy_cleanup(curl);
   }
 
   return json::parse(readBuffer);
 }
 
+bool Device::separate_data_by_pakets()
+{
+    if(1)
+    {
+        long long *nfcs;
+        int size = NFC_list.size();
+        nfcs = (long long *)malloc(sizeof(long long*) * size);
+        std::string nfc;
+        int i = -1;
+        while(++i < size)
+            nfcs[i] = NFC_list[i].get<long long>();
+        
+        return (true);
+    }
+
+    return (false);
+}

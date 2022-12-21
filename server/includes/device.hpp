@@ -31,6 +31,7 @@ public:
     uint32_t serv_updtime_PIN = 0;
     uint32_t dev_updtime_NFC = 0;
     uint32_t dev_updtime_PIN = 0;
+    uint8_t paket_count;
 
     // class constructor destructor
     Device(int dev_sock, std::unordered_map<std::string, Device*> *device_map);

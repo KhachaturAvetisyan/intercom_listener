@@ -14,6 +14,7 @@ void dev_thread(int client_socket)
         dev.send_status(0x00);
         return;
     }
+    std::cout << "read start byte done\n";
     if(!dev.hand_shake())
     {
         perror("hand shake error");
@@ -30,9 +31,6 @@ void dev_thread(int client_socket)
 
     device_map.insert({dev.imei, &dev});
 
-    // std::cout << dev.serv_updtime_NFC << "\n";
-    // std::cout << dev.serv_updtime_PIN << "\n";
-
     uint8_t startbyte;
     while(1)
     {
@@ -45,7 +43,6 @@ void dev_thread(int client_socket)
                 perror("Ping Was not reading");
                 return ;
             }
-            
             if(dev.serv_updtime_NFC != dev.dev_updtime_NFC)
             {
                 // Case #03 Time competition for NFC is false
@@ -54,42 +51,106 @@ void dev_thread(int client_socket)
                     perror("Get_NFC_list error");
                     return;
                 }
-
                 if(!dev.separate_data_by_pakets())
                 {
                     perror("separate_data_by_pakets error");
                     return;
                 }
-
-                if(!dev.Request_for_update())
+                // if(!dev.Request_for_update())
+                // {
+                //     perror("Request_for_update error");
+                //     return;
+                // }
+                startbyte = dev.read_byte();
+                if(startbyte == 0x00)
                 {
-                    perror("Request_for_update error");
-                    return;
+                    sleep(30);
+                    continue;
                 }
-
-                if(!dev.read_status())
-                {
-                    perror("read_status error");
-                    return;
-                }
-
-
+                // else if(startbyte == 0x01)
+                // {
+                //     for(int i = 0; i < dev.paket_count; ++i)
+                //     {
+                //         for(int j = 0; j < 3; ++j)
+                //         {
+                //             if(dev.Data_Body())
+                //                 break;
+                //         }
+                //     }
+                //     if(!dev.Post_device_updtime())
+                //     {
+                //         perror("Post device updtime error");
+                //         return;
+                //     }
+                // }
             }
-
             if(dev.serv_updtime_PIN != dev.dev_updtime_PIN)
             {
-                // Case #04
+                // Case #04 Time competition for PIN is false
+                // if(!dev.Get_PIN_list())
+                // {
+                //     perror("Get_PIN_list error");
+                //     return;
+                // }
+                // if(!dev.separate_data_by_pakets())
+                // {
+                //     perror("separate_data_by_pakets error");
+                //     return;
+                // }
+                // if(!dev.Request_for_update())
+                // {
+                //     perror("Request_for_update error");
+                //     return;
+                // }
+                // startbyte = dev.read_byte();
+                // if(startbyte == 0x00)
+                // {
+                //     sleep(30);
+                //     continue;
+                // }
+                // else if(startbyte == 0x01)
+                // {
+                //     for(int i = 0; i < dev.paket_count; ++i)
+                //     {
+                //         for(int j = 0; j < 3; ++j)
+                //         {
+                //             if(dev.Data_Body())
+                //                 break;
+                //         }
+                //     }
+                //     if(!dev.Post_device_updtime())
+                //     {
+                //         perror("Post device updtime error");
+                //         return;
+                //     }
+                // }
+
             }
         }
-        if(startbyte == 0xFB)
+        else if(startbyte == 0xFB)
         {
-
+            // Case #06 Post device event
+            if(!dev.read_history())
+            {
+                dev.send_status(0x00);
+                perror("read history error");
+                return;
+            }
+            if(dev.Post_device_event())
+            {
+                dev.send_status(0x00);
+                perror("Post device event error");
+                return;
+            }
+            dev.send_status(0x01);
         }
         else
         {
             perror("read start byte error");
             return;
         }
+
+        sleep(30);
     }
 }
 
@@ -154,6 +215,7 @@ void socket_serv(int port)
 
 }
 
+// Case #05 post request from server about update
 void device_updt(const Rest::Request& req, Http::ResponseWriter resp) 
 {
     rapidjson::Document doc;

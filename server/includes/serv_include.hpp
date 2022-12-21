@@ -15,6 +15,7 @@
 # include <poll.h>
 # include <chrono>
 # include <unordered_map>
+# include <stdlib.h>
 
 // http API
 # include <pistache/endpoint.h>

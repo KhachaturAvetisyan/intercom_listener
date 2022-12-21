@@ -40,6 +40,13 @@ typedef struct
   uint16_t crc;
 }history_struct;
 
+// typedef struct
+// {
+//     uint8_t startbyte;
+//     uint8_t packet_count;
+//     uint8_t 
+// }body;
+
 int main()
 {
     int sock = 0, valread, client_fd;
@@ -79,7 +86,12 @@ int main()
     
     // std::cout << "sleep 5 sec\n";
     // sleep(5);
-    if(send(sock, init_s, 16, 0) < 0)
+    if(send(sock, &init_s->startword, 1, 0) < 0)
+    {
+        perror("send error");
+        exit(EXIT_FAILURE);
+    }
+    if(send(sock, &init_s->imei, 15, 0) < 0)
     {
         perror("send error");
         exit(EXIT_FAILURE);
@@ -109,11 +121,27 @@ int main()
         return 0;
     }
     
+
     std::cout << "status is : OK\n";
 
+    ping_struct ping;
+    
+    ping.updtime_NFC = 2;
+    ping.updtime_PIN = 3;
+    uint8_t startword;
     while(1)
     {
-        
+        startword = 0XFA;
+        if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
+        {
+            perror("Ping Startword Did Not Send");
+            return (0);
+        }
+        if(send(sock, &ping, sizeof(ping_struct), 0) < 0)
+        {
+            perror("Ping Structure Did Not Send");
+            return (0);
+        }
     }
 
     // closing the connected socket
