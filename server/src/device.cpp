@@ -12,7 +12,6 @@ Device::~Device()
     device_map->erase(imei);
 }
 
-
 // listener to server requests
 bool Device::Get_device_status()
 {
@@ -116,7 +115,6 @@ bool Device::Post_device_updtime()
     return true;
 }
 
-
 // helper functions
 template <typename T>  
 bool Device::read_data(T data, size_t size)
@@ -152,7 +150,6 @@ bool Device::send_data(T data, size_t size)
     return true;
 }
 
-
 // status functions
 void Device::send_status(uint8_t status)
 {
@@ -167,7 +164,6 @@ uint8_t Device::read_byte()
     // std::cout << (data == 0xFE) << "\n";
     return data;
 }
-
 
 // listener to device send & read functions
 bool Device::hand_shake()
@@ -205,7 +201,6 @@ bool Device::read_history()
     // free(history_s);
     return true;
 }
-
 
 // curl post & get request
 size_t Device::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -302,15 +297,32 @@ bool Device::separate_data_by_pakets()
 
 bool Device::Request_for_update(uint8_t req_code)
 {
+    uint8_t packets;
+    upd_request upd;
+
     if(!nfcs[0])
         return (false);
+    packets = calc_packets(nfcs);
     if(req_code == 0X00)
     {
-        int c = -1;
-        //request for update NFC list
-        std::cout << "Update NFC List" << std::endl;
-          while(++c < NFC_list.size())
-            std::cout << nfcs[c] << std::endl;
+        upd.request_update[0] = 0x12;
+        upd.request_update[1] = 0x34;
+        upd.request_update[2] = 0x56;
+        upd.request_update[3] = 0x78;
+        upd.packet_count = 15;
+        upd.typeof_upd_list = req_code;
+        if(!send(device_socket, &upd, sizeof(upd_request), 0) < 0)
+        {
+            perror("request for update was dumped");
+            return (false);
+        }
+        std::cout << (int)upd.packet_count << std::endl;
+        std::cout << (int)upd.typeof_upd_list << std::endl;
+        std::cout << (int)upd.request_update[0] << " ";
+        std::cout << (int)upd.request_update[1] << " ";
+        std::cout << (int)upd.request_update[2] << " ";
+        std::cout << (int)upd.request_update[3] << std::endl;
+        std::cout << (int)upd.typeof_upd_list << std::endl;
     }
     else if(req_code == 0x01)
     {
@@ -321,4 +333,9 @@ bool Device::Request_for_update(uint8_t req_code)
     else
         return (false);
     return (true);
+}
+
+uint8_t Device::calc_packets(long long *nfcs)
+{
+    return (1);
 }

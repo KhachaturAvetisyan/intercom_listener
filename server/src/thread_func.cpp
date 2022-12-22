@@ -64,6 +64,7 @@ void dev_thread(int client_socket)
                 startbyte = dev.read_byte();
                 if(startbyte == 0x00)
                 {
+                    std::cout << "Do not Update!" << std::endl;
                     sleep(30);
                     continue;
                 }
@@ -149,8 +150,6 @@ void dev_thread(int client_socket)
             perror("read start byte error");
             return;
         }
-
-        sleep(30);
     }
 }
 

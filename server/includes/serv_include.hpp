@@ -54,6 +54,13 @@ typedef struct
   uint16_t crc;
 }history_struct;
 
+typedef struct
+{
+  uint32_t request_update[4];
+  uint8_t packet_count;
+  uint8_t typeof_upd_list;
+}upd_request;
+
 # include "device.hpp"
 
 // main servers thread functions

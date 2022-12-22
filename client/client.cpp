@@ -47,6 +47,13 @@ typedef struct
 //     uint8_t 
 // }body;
 
+typedef struct
+{
+  uint32_t request_update[4];
+  uint8_t packet_count;
+  uint8_t typeof_upd_list;
+}upd_request;
+
 int main()
 {
     int sock = 0, valread, client_fd;
@@ -125,10 +132,11 @@ int main()
     std::cout << "status is : OK\n";
 
     ping_struct ping;
-    
+    upd_request upd;
+    uint8_t startword;
+
     ping.updtime_NFC = 2;
     ping.updtime_PIN = 3;
-    uint8_t startword;
     while(1)
     {
         startword = 0XFA;
@@ -142,6 +150,25 @@ int main()
             perror("Ping Structure Did Not Send");
             return (0);
         }
+        if(read(sock, &upd, sizeof(upd_request)) < 0)
+        {
+            perror("requested update was dumped");
+            return (0);
+        }
+        startword = 0x01;
+        if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
+        {
+            perror("send to update was dumped");
+            return (0);
+        }
+        std::cout << (int)upd.packet_count << std::endl;
+        std::cout << (int)upd.typeof_upd_list << std::endl;
+        std::cout << (int)upd.request_update[0] << " ";
+        std::cout << (int)upd.request_update[1] << " ";
+        std::cout << (int)upd.request_update[2] << " ";
+        std::cout << (int)upd.request_update[3] << std::endl;
+        std::cout << (int)upd.typeof_upd_list << std::endl;
+
     }
 
     // closing the connected socket
