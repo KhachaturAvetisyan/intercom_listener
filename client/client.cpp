@@ -168,7 +168,8 @@ int main()
         std::cout << (int)upd.request_update[2] << " ";
         std::cout << (int)upd.request_update[3] << std::endl;
         std::cout << (int)upd.typeof_upd_list << std::endl;
-
+        
+        sleep(60);
     }
 
     // closing the connected socket

@@ -31,8 +31,10 @@ void dev_thread(int client_socket)
 
     device_map.insert({dev.imei, &dev});
 
-    uint8_t startbyte;
-    while(1)
+    uint8_t startbyte = 0x01;
+    uint8_t status;
+
+    while(startbyte != 0x00)
     {
         startbyte = dev.read_byte();
         if(startbyte == 0xFA)
@@ -41,7 +43,7 @@ void dev_thread(int client_socket)
             if(!dev.read_ping())
             {
                 perror("Ping Was not reading");
-                return ;
+                continue;
             }
             if(dev.serv_updtime_NFC != dev.dev_updtime_NFC)
             {
@@ -49,26 +51,25 @@ void dev_thread(int client_socket)
                 if(!dev.Get_NFC_list())
                 {
                     perror("Get_NFC_list error");
-                    return;
+                    continue;
                 }
                 if(!dev.separate_data_by_pakets())
                 {
                     perror("separate_data_by_pakets error");
-                    return;
+                    continue;
                 }
                 if(!dev.Request_for_update(0X00))
                 {
                     perror("Request_for_update error");
-                    return;
-                }
-                startbyte = dev.read_byte();
-                if(startbyte == 0x00)
-                {
-                    std::cout << "Do not Update!" << std::endl;
-                    sleep(30);
                     continue;
                 }
-                // else if(startbyte == 0x01)
+                status = dev.read_byte();
+                if(status == 0x00)
+                {
+                    std::cout << "Do not Update!" << std::endl;
+                    continue;
+                }
+                // else if(status == 0x01)
                 // {
                 //     for(int i = 0; i < dev.paket_count; ++i)
                 //     {
@@ -81,7 +82,7 @@ void dev_thread(int client_socket)
                 //     if(!dev.Post_device_updtime())
                 //     {
                 //         perror("Post device updtime error");
-                //         return;
+                //         continue;
                 //     }
                 // }
             }
@@ -91,25 +92,25 @@ void dev_thread(int client_socket)
                 // if(!dev.Get_PIN_list())
                 // {
                 //     perror("Get_PIN_list error");
-                //     return;
+                //     continue;
                 // }
                 // if(!dev.separate_data_by_pakets())
                 // {
                 //     perror("separate_data_by_pakets error");
-                //     return;
+                //     continue;
                 // }
                 // if(!dev.Request_for_update())
                 // {
                 //     perror("Request_for_update error");
-                //     return;
+                //     continue;
                 // }
-                // startbyte = dev.read_byte();
-                // if(startbyte == 0x00)
+                // status = dev.read_byte();
+                // if(status == 0x00)
                 // {
                 //     sleep(30);
                 //     continue;
                 // }
-                // else if(startbyte == 0x01)
+                // else if(status == 0x01)
                 // {
                 //     for(int i = 0; i < dev.paket_count; ++i)
                 //     {
@@ -122,7 +123,7 @@ void dev_thread(int client_socket)
                 //     if(!dev.Post_device_updtime())
                 //     {
                 //         perror("Post device updtime error");
-                //         return;
+                //         continue;
                 //     }
                 // }
 
@@ -135,20 +136,15 @@ void dev_thread(int client_socket)
             {
                 dev.send_status(0x00);
                 perror("read history error");
-                return;
+                continue;
             }
             if(dev.Post_device_event())
             {
                 dev.send_status(0x00);
                 perror("Post device event error");
-                return;
+                continue;
             }
             dev.send_status(0x01);
-        }
-        else
-        {
-            perror("read start byte error");
-            return;
         }
     }
 }

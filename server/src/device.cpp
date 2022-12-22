@@ -311,11 +311,18 @@ bool Device::Request_for_update(uint8_t req_code)
         upd.request_update[3] = 0x78;
         upd.packet_count = 15;
         upd.typeof_upd_list = req_code;
-        if(!send(device_socket, &upd, sizeof(upd_request), 0) < 0)
+        // if(!send(device_socket, &upd, sizeof(upd_request), 0) < 0)
+        // {
+        //     perror("request for update was dumped");
+        //     return (false);
+        // }
+
+        if(!send_data(&upd, sizeof(upd_request)))
         {
             perror("request for update was dumped");
             return (false);
         }
+
         std::cout << (int)upd.packet_count << std::endl;
         std::cout << (int)upd.typeof_upd_list << std::endl;
         std::cout << (int)upd.request_update[0] << " ";
@@ -332,6 +339,7 @@ bool Device::Request_for_update(uint8_t req_code)
     }
     else
         return (false);
+        
     return (true);
 }
 
