@@ -139,7 +139,7 @@ int main()
     ping.updtime_PIN = 3;
     while(1)
     {
-        startword = 0XFA;
+        startword = 0XAA;
         if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
         {
             perror("Ping Startword Did Not Send");
@@ -155,12 +155,6 @@ int main()
             perror("requested update was dumped");
             return (0);
         }
-        startword = 0x01;
-        if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
-        {
-            perror("send to update was dumped");
-            return (0);
-        }
         std::cout << (int)upd.packet_count << std::endl;
         std::cout << (int)upd.typeof_upd_list << std::endl;
         std::cout << (int)upd.request_update[0] << " ";
@@ -168,10 +162,15 @@ int main()
         std::cout << (int)upd.request_update[2] << " ";
         std::cout << (int)upd.request_update[3] << std::endl;
         std::cout << (int)upd.typeof_upd_list << std::endl;
+        startword = 0x01;
+        if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
+            {
+                perror("send to update was dumped");
+                return (0);
+            }    
         
-        sleep(60);
+        sleep(5);
     }
-
     // closing the connected socket
     close(client_fd);
     return 0;

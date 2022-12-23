@@ -37,7 +37,7 @@ void dev_thread(int client_socket)
     while(startbyte != 0x00)
     {
         startbyte = dev.read_byte();
-        if(startbyte == 0xFA)
+        if(startbyte == 0xAA)
         {
             // Case #02 Ping from device
             if(!dev.read_ping())

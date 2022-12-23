@@ -180,7 +180,7 @@ bool Device::hand_shake()
 bool Device::read_ping()
 {
     ping_struct *ping_s;
-
+    uint8_t startbyte;
     ping_s = (ping_struct*)malloc(sizeof(ping_struct));
 
     if(!read_data(ping_s, sizeof(ping_struct)))
@@ -311,13 +311,8 @@ bool Device::Request_for_update(uint8_t req_code)
         upd.request_update[3] = 0x78;
         upd.packet_count = 15;
         upd.typeof_upd_list = req_code;
-        // if(!send(device_socket, &upd, sizeof(upd_request), 0) < 0)
-        // {
-        //     perror("request for update was dumped");
-        //     return (false);
-        // }
 
-        if(!send_data(&upd, sizeof(upd_request)))
+        if(!send_data(upd, sizeof(upd_request)))
         {
             perror("request for update was dumped");
             return (false);
