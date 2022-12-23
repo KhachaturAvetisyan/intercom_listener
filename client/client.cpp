@@ -139,7 +139,7 @@ int main()
     ping.updtime_PIN = 3;
     while(1)
     {
-        startword = 0XAA;
+        startword = 0XA2;
         if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
         {
             perror("Ping Startword Did Not Send");
@@ -150,24 +150,33 @@ int main()
             perror("Ping Structure Did Not Send");
             return (0);
         }
-        if(read(sock, &upd, sizeof(upd_request)) < 0)
+        if(read(sock, &startword, sizeof(uint8_t)) < 0)
         {
-            perror("requested update was dumped");
+            perror("Response not found");
             return (0);
-        }
-        std::cout << (int)upd.packet_count << std::endl;
-        std::cout << (int)upd.typeof_upd_list << std::endl;
-        std::cout << (int)upd.request_update[0] << " ";
-        std::cout << (int)upd.request_update[1] << " ";
-        std::cout << (int)upd.request_update[2] << " ";
-        std::cout << (int)upd.request_update[3] << std::endl;
-        std::cout << (int)upd.typeof_upd_list << std::endl;
-        startword = 0x01;
-        if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
+        }        
+        if(startword == 0X01)
+        {
+            if(read(sock, &upd, sizeof(upd_request)) < 0)
+            {
+                perror("requested update was dumped");
+                return (0);
+            }
+            std::cout << (int)upd.packet_count << std::endl;
+            std::cout << (int)upd.typeof_upd_list << std::endl;
+            std::cout << (int)upd.request_update[0] << " ";
+            std::cout << (int)upd.request_update[1] << " ";
+            std::cout << (int)upd.request_update[2] << " ";
+            std::cout << (int)upd.request_update[3] << std::endl;
+            std::cout << (int)upd.typeof_upd_list << std::endl;
+            startword = 0x01;
+            if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
             {
                 perror("send to update was dumped");
                 return (0);
-            }    
+            }   
+        }
+        
         
         sleep(5);
     }

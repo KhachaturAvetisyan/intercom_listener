@@ -187,6 +187,7 @@ bool Device::read_ping()
         return false;
     dev_updtime_NFC = ping_s->updtime_NFC;
     dev_updtime_PIN = ping_s->updtime_PIN;
+    send_status(0X01);
     free(ping_s);
     return true;
 }

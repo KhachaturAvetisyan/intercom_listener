@@ -1,5 +1,20 @@
 # include "../includes/serv_include.hpp" 
 
+/*
+
+   -- 0XFE -> handshake
+
+   ---0XA1 -> ping-----send-->0X01------
+   |     0XB1 -> Request for update    |
+   |         0X00 -> update for NFC    |
+   |         0X01 -> update for PIN    |
+   |     0XB2 -> Data Packet           |
+   |___________________________________|
+
+   -- 0XA2 -> history
+
+*/
+
 std::unordered_map<std::string, Device*> device_map;
 
 void dev_thread(int client_socket)
@@ -37,7 +52,7 @@ void dev_thread(int client_socket)
     while(startbyte != 0x00)
     {
         startbyte = dev.read_byte();
-        if(startbyte == 0xAA)
+        if(startbyte == 0xA1)
         {
             // Case #02 Ping from device
             if(!dev.read_ping())
@@ -129,7 +144,7 @@ void dev_thread(int client_socket)
 
             }
         }
-        else if(startbyte == 0xFB)
+        else if(startbyte == 0xA2)
         {
             // Case #06 Post device event
             if(!dev.read_history())
