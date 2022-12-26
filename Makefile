@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -lcurl -lpistache
+CFLAGS = -std=c++20 -lcurl -lpistache
 
 # LDLIBS = -lcurl -lpthread
 
@@ -15,7 +15,6 @@ SERV_OBJ = $(patsubst %.cpp, $(OBJ_DIR)%.o, $(notdir $(SERV_SRC)))
 
 
 all: make_dir server.out client.out
-
 
 api: make_dir api.out api_curl.out
 
