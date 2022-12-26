@@ -291,6 +291,7 @@ bool Device::separate_data_by_pakets()
         int i = -1;
         while(++i < size)
             nfcs[i] = NFC_list[i].get<long long>();
+        
         return (true);
     }
     return (false);
@@ -303,35 +304,23 @@ bool Device::Request_for_update(uint8_t req_code)
 
     if(!nfcs[0])
         return (false);
-    packets = calc_packets(nfcs);
     if(req_code == 0X00)
     {
-        upd.request_update[0] = 0x12;
-        upd.request_update[1] = 0x34;
-        upd.request_update[2] = 0x56;
-        upd.request_update[3] = 0x78;
-        upd.packet_count = 15;
-        upd.typeof_upd_list = req_code;
-
+        upd.startbyte  = 0XB1;
+        upd.datatype   = req_code;
+        upd.data_time  = time(NULL);
+        upd.data_count = 14;
+        upd.checksum = checksum(upd);
         if(!send_data(upd, sizeof(upd_request)))
         {
             perror("request for update was dumped");
             return (false);
         }
-
-        std::cout << (int)upd.packet_count << std::endl;
-        std::cout << (int)upd.typeof_upd_list << std::endl;
-        std::cout << (int)upd.request_update[0] << " ";
-        std::cout << (int)upd.request_update[1] << " ";
-        std::cout << (int)upd.request_update[2] << " ";
-        std::cout << (int)upd.request_update[3] << std::endl;
-        std::cout << (int)upd.typeof_upd_list << std::endl;
     }
     else if(req_code == 0x01)
     {
         //request for update PIN list
         std::cout << "Update PIN List" << std::endl;
-
     }
     else
         return (false);
@@ -339,7 +328,13 @@ bool Device::Request_for_update(uint8_t req_code)
     return (true);
 }
 
-uint8_t Device::calc_packets(long long *nfcs)
+uint16_t Device::checksum(upd_request upd)
 {
-    return (1);
+    uint16_t sum;
+
+    sum = upd.startbyte  + \
+          upd.datatype   + \
+          upd.data_time  + \
+          upd.data_count;
+    return (sum);
 }

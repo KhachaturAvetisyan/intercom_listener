@@ -26,6 +26,9 @@ private:
     template <typename T> 
     bool send_data(T data, size_t size);
 
+    //checksum
+    uint16_t checksum(upd_request upd);
+
 public:
     std::string imei;
     uint32_t serv_updtime_NFC = 0;

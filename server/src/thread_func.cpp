@@ -268,13 +268,9 @@ void http_serv(int port_)
     Address addr(Ipv4::any(), port);
     std::shared_ptr<Http::Endpoint> endpoint = std::make_shared<Http::Endpoint>(addr);
     auto opts = Http::Endpoint::options().threads(1);   // how many threads for the server
-
     std::cout << "run http server\n";
-
     endpoint->init(opts);
-
     Routes::Post(router, "/device_updt", Routes::bind(&device_updt));
-
     endpoint->setHandler(router.handler());
     endpoint->serve();
 

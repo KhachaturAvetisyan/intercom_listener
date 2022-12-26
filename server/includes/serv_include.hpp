@@ -56,10 +56,12 @@ typedef struct
 
 typedef struct
 {
-  uint32_t request_update[4];
-  uint8_t packet_count;
-  uint8_t typeof_upd_list;
-}upd_request;
+  uint8_t  startbyte; //  0XB1
+  uint8_t  datatype;  //  NFC[0X00] | PIN[0X01]
+  uint32_t data_time; //  1672040924
+  uint64_t data_count;//  15
+  uint16_t checksum;  //  sizeof(struct X) - sizeof(uint16_t) | 
+}upd_request; 
 
 # include "device.hpp"
 

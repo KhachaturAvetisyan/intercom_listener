@@ -49,10 +49,12 @@ typedef struct
 
 typedef struct
 {
-  uint32_t request_update[4];
-  uint8_t packet_count;
-  uint8_t typeof_upd_list;
-}upd_request;
+  uint8_t  startbyte; //  0XB1
+  uint8_t  datatype;  //  NFC[0X00] | PIN[0X01]
+  uint32_t data_time; //  1672040924
+  uint64_t data_count;//  15
+  uint16_t checksum;  //  sizeof(struct X) - sizeof(uint16_t) | 
+}upd_request; 
 
 int main()
 {
@@ -139,45 +141,48 @@ int main()
     ping.updtime_PIN = 3;
     while(1)
     {
-        startword = 0XA2;
-        if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
+        startword = 0XA1;
+        if(startword == 0XA1) // ping
         {
-            perror("Ping Startword Did Not Send");
-            return (0);
-        }
-        if(send(sock, &ping, sizeof(ping_struct), 0) < 0)
-        {
-            perror("Ping Structure Did Not Send");
-            return (0);
-        }
-        if(read(sock, &startword, sizeof(uint8_t)) < 0)
-        {
-            perror("Response not found");
-            return (0);
-        }        
-        if(startword == 0X01)
-        {
-            if(read(sock, &upd, sizeof(upd_request)) < 0)
-            {
-                perror("requested update was dumped");
-                return (0);
-            }
-            std::cout << (int)upd.packet_count << std::endl;
-            std::cout << (int)upd.typeof_upd_list << std::endl;
-            std::cout << (int)upd.request_update[0] << " ";
-            std::cout << (int)upd.request_update[1] << " ";
-            std::cout << (int)upd.request_update[2] << " ";
-            std::cout << (int)upd.request_update[3] << std::endl;
-            std::cout << (int)upd.typeof_upd_list << std::endl;
-            startword = 0x01;
             if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
             {
-                perror("send to update was dumped");
+                perror("Ping Startword Did Not Send");
                 return (0);
-            }   
+            }
+            if(send(sock, &ping, sizeof(ping_struct), 0) < 0)
+            {
+                perror("Ping Structure Did Not Send");
+                return (0);
+            }
+            if(read(sock, &startword, sizeof(uint8_t)) < 0)
+            {
+                perror("Response not found");
+                return (0);
+            }        
+            if(startword == 0X01)
+            {
+                if(read(sock, &upd, sizeof(upd_request)) < 0)
+                {
+                    perror("requested update was dumped");
+                    return (0);
+                }
+                
+                startword = 0x01;
+                if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
+                {
+                    perror("send to update was dumped");
+                    return (0);
+                }   
+            }
+            else
+            {
+                perror("Rsponse Not returned");
+                exit(0);
+            } 
         }
-        
-        
+        else if(startword == 0XA2) //history
+        {
+        }
         sleep(5);
     }
     // closing the connected socket
