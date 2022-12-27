@@ -9,14 +9,14 @@
 class ConfigReader
 {
 private:
-    ConfigReader();
+    
 
 public:
+    ConfigReader(){};
     std::string api;
     size_t read_timelimit;
 
     ConfigReader(const ConfigReader&) = delete;
-    ~ConfigReader() = delete;
 
     [[nodiscard]]
     static std::shared_ptr<ConfigReader> Get_configuration(const std::string &path)
@@ -45,3 +45,5 @@ public:
 };
 
 #endif
+
+// g++ -std=c++20 conf.cpp
