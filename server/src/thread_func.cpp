@@ -23,13 +23,6 @@ void dev_thread(int client_socket)
     Device dev(client_socket, &device_map);
     
     // Case #01 Device connection
-    if(dev.read_byte() != 0xFE)
-    {
-        perror("read start byte error");
-        dev.send_status(0x00);
-        return;
-    }
-    std::cout << "read start byte done\n";
     if(!dev.hand_shake())
     {
         perror("hand shake error");

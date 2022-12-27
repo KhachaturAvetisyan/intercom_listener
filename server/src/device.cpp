@@ -12,6 +12,7 @@ Device::~Device()
     device_map->erase(imei);
 }
 
+
 // listener to server requests
 bool Device::Get_device_status()
 {
@@ -115,6 +116,7 @@ bool Device::Post_device_updtime()
     return true;
 }
 
+
 // helper functions
 template <typename T>  
 bool Device::read_data(T data, size_t size)
@@ -150,6 +152,7 @@ bool Device::send_data(T data, size_t size)
     return true;
 }
 
+
 // status functions
 void Device::send_status(uint8_t status)
 {
@@ -165,14 +168,24 @@ uint8_t Device::read_byte()
     return data;
 }
 
+
 // listener to device send & read functions
 bool Device::hand_shake()
 {
-    char buffer[15];
-    if(!read_data(&buffer, 15))
+    uint8_t data[16];
+    if(!read_data(&data, 16))
         return false;
 
-    imei = buffer;
+    uint8_t startbyte = data[0];
+    if (startbyte != 0xFE)
+    {
+        perror("startbyte error");
+        return false;
+    }
+
+    for (int i = 0; i < 15; ++i)
+        imei += data[1 + i];
+
     std::cout << imei << "\n";
     return true;
 }
@@ -202,6 +215,7 @@ bool Device::read_history()
     // free(history_s);
     return true;
 }
+
 
 // curl post & get request
 size_t Device::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
