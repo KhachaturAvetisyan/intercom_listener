@@ -314,14 +314,14 @@ void ArrayToPingDataStruct(uint8_t *array, ping_data_typedef *ping_data)
 
     ping_data->battery_voltage = (array[7] << 8) | array[8];
 
-    ping_data->NFC_list_update_time  = (array[9]  >> 24) 
-                                     | (array[10] >> 16)
-                                     | (array[11] >> 8)
+    ping_data->NFC_list_update_time  = (array[9]  << 24) 
+                                     | (array[10] << 16)
+                                     | (array[11] << 8)
                                      | (array[12]);
 
-    ping_data->PIN_list_update_time  = (array[13] >> 24) 
-                                     | (array[14] >> 16)
-                                     | (array[15] >> 8)
+    ping_data->PIN_list_update_time  = (array[13] << 24) 
+                                     | (array[14] << 16)
+                                     | (array[15] << 8)
                                      | (array[16]);
 
     ping_data->checksum = (array[17] << 8) | array[18];
