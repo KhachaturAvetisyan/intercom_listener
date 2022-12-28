@@ -209,7 +209,7 @@ uint16_t GetChecksum(uint8_t *array, uint16_t array_length)
     if (array_length < 2) return array[0];
 
     uint16_t ret_val = 0;
-    uint16_t *arr_ptr = (uint16_t);
+    uint16_t *arr_ptr = (uint16_t *)array;
 
     for (int i = 0; i < array_length / 2; i++)
     {
@@ -222,31 +222,31 @@ uint16_t GetChecksum(uint8_t *array, uint16_t array_length)
 
 void PingDataStructToArray(ping_data_typedef *ping_data, uint8_t *array)
 {
-    array[0] = startbyte;
-    array[1] = working_mode;
+    array[0] = ping_data->startbyte;
+    array[1] = ping_data->working_mode;
 
-    array[2] = firmware_version >> 8;
-    array[3] = firmware_version;
+    array[2] = ping_data->firmware_version >> 8;
+    array[3] = ping_data->firmware_version;
     
-    array[4] = SIM_info;
-    array[5] = SIM1_connection_quality;
-    array[6] = SIM2_connection_quality;
+    array[4] = ping_data->SIM_info;
+    array[5] = ping_data->SIM1_connection_quality;
+    array[6] = ping_data->SIM2_connection_quality;
 
-    array[7] = battery_voltage >> 8;
-    array[8] = battery_voltage;
+    array[7] = ping_data->battery_voltage >> 8;
+    array[8] = ping_data->battery_voltage;
 
-    array[9]  = NFC_list_update_time >> 24;
-    array[10] = NFC_list_update_time >> 16;
-    array[11] = NFC_list_update_time >>  8;
-    array[12] = NFC_list_update_time;
+    array[9]  = ping_data->NFC_list_update_time >> 24;
+    array[10] = ping_data->NFC_list_update_time >> 16;
+    array[11] = ping_data->NFC_list_update_time >>  8;
+    array[12] = ping_data->NFC_list_update_time;
 
-    array[13] = PIN_list_update_time >> 24;
-    array[14] = PIN_list_update_time >> 16;
-    array[15] = PIN_list_update_time >>  8;
-    array[16] = PIN_list_update_time;
+    array[13] = ping_data->PIN_list_update_time >> 24;
+    array[14] = ping_data->PIN_list_update_time >> 16;
+    array[15] = ping_data->PIN_list_update_time >>  8;
+    array[16] = ping_data->PIN_list_update_time;
 
-    array[17] = checksum >> 8;
-    array[18] = checksum;
+    array[17] = ping_data->checksum >> 8;
+    array[18] = ping_data->checksum;
 }
 
 
@@ -291,7 +291,7 @@ uint16_t GetChecksum(uint8_t *array, uint16_t array_length)
     if (array_length < 2) return array[0];
 
     uint16_t ret_val = 0;
-    uint16_t *arr_ptr = (uint16_t);
+    uint16_t *arr_ptr = (uint16_t *)array;
 
     for (int i = 0; i < array_length / 2; i++)
     {
