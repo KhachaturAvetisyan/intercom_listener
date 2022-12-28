@@ -192,7 +192,7 @@ Byte 1 - Status
 typedef struct {
 uint8_t  startbyte;
 uint8_t  working_mode;
-uint8_t  firmware_version;
+uint16_t firmware_version;
 uint8_t  SIM_info;
 uint8_t  SIM1_connection_quality;
 uint8_t  SIM2_connection_quality;
@@ -274,7 +274,7 @@ int SendPingData(int socket, ping_data_typedef *ping_data)
 typedef struct {
 uint8_t  startbyte;
 uint8_t  working_mode;
-uint8_t  firmware_version;
+uint16_t firmware_version;
 uint8_t  SIM_info;
 uint8_t  SIM1_connection_quality;
 uint8_t  SIM2_connection_quality;
@@ -306,25 +306,25 @@ void ArrayToPingDataStruct(uint8_t *array, ping_data_typedef *ping_data)
 {
     ping_data->startbyte = array[0];
     ping_data->working_mode = array[1];
-    ping_data->firmware_version = (array[2] << 8) | array[3];
+    ping_data->firmware_version = ((uint16_t)array[2] << 8) | array[3];
     
     ping_data->SIM_info = array[4];
     ping_data->SIM1_connection_quality = array[5];
     ping_data->SIM2_connection_quality = array[6];
 
-    ping_data->battery_voltage = (array[7] << 8) | array[8];
+    ping_data->battery_voltage = ((uint16_t)array[7] << 8) | array[8];
 
-    ping_data->NFC_list_update_time  = (array[9]  << 24) 
-                                     | (array[10] << 16)
-                                     | (array[11] << 8)
-                                     | (array[12]);
+    ping_data->NFC_list_update_time  = ((uint32_t)array[9]  << 24) 
+                                     | ((uint32_t)array[10] << 16)
+                                     | ((uint32_t)array[11] << 8)
+                                     | ((uint32_t)array[12]);
 
-    ping_data->PIN_list_update_time  = (array[13] << 24) 
-                                     | (array[14] << 16)
-                                     | (array[15] << 8)
-                                     | (array[16]);
+    ping_data->PIN_list_update_time  = ((uint32_t)array[13] << 24) 
+                                     | ((uint32_t)array[14] << 16)
+                                     | ((uint32_t)array[15] << 8)
+                                     | ((uint32_t)array[16]);
 
-    ping_data->checksum = (array[17] << 8) | array[18];
+    ping_data->checksum = ((uint16_t)array[17] << 8) | array[18];
 }
 
 
