@@ -192,16 +192,54 @@ bool Device::hand_shake()
 
 bool Device::read_ping()
 {
-    ping_struct *ping_s;
-    uint8_t startbyte;
-    ping_s = (ping_struct*)malloc(sizeof(ping_struct));
+    uint8_t array[18];
 
-    if(!read_data(ping_s, sizeof(ping_struct)))
+    if(!read_data(array, 18))
         return false;
-    dev_updtime_NFC = ping_s->updtime_NFC;
-    dev_updtime_PIN = ping_s->updtime_PIN;
-    send_status(0X01);
-    free(ping_s);
+
+    ping_struct serv_ping_data;
+    
+    serv_ping_data.working_mode = array[0];
+    serv_ping_data.firmware_version = ((uint16_t)array[1] << 8) | array[2];
+    
+    serv_ping_data.SIM_info = array[3];
+    serv_ping_data.SIM1_connection_quality = array[4];
+    serv_ping_data.SIM2_connection_quality = array[5];
+
+    serv_ping_data.battery_voltage = ((uint16_t)array[6] << 8) | array[7];
+
+    serv_ping_data.NFC_list_update_time  = ((uint32_t)array[8]  << 24) 
+                                     | ((uint32_t)array[9] << 16)
+                                     | ((uint32_t)array[10] << 8)
+                                     | ((uint32_t)array[11]);
+
+    serv_ping_data.PIN_list_update_time  = ((uint32_t)array[12] << 24) 
+                                     | ((uint32_t)array[13] << 16)
+                                     | ((uint32_t)array[14] << 8)
+                                     | ((uint32_t)array[15]);
+
+    serv_ping_data.checksum = ((uint16_t)array[16] << 8) | array[17];
+
+    std::cout << (int)serv_ping_data.working_mode << "\n";
+    std::cout << (int)serv_ping_data.firmware_version << "\n";
+    std::cout << (int)serv_ping_data.SIM_info << "\n";
+    std::cout << (int)serv_ping_data.SIM1_connection_quality << "\n";
+    std::cout << (int)serv_ping_data.SIM2_connection_quality << "\n";
+    std::cout << (int)serv_ping_data.battery_voltage << "\n";
+    std::cout << serv_ping_data.NFC_list_update_time << "\n";
+    std::cout << serv_ping_data.PIN_list_update_time << "\n";
+    std::cout << serv_ping_data.checksum << "\n";
+
+    // ping_struct *ping_s;
+    // uint8_t startbyte;
+    // ping_s = (ping_struct*)malloc(sizeof(ping_struct));
+
+    // if(!read_data(ping_s, sizeof(ping_struct)))
+    //     return false;
+    // dev_updtime_NFC = ping_s->updtime_NFC;
+    // dev_updtime_PIN = ping_s->updtime_PIN;
+    // send_status(0X01);
+    // free(ping_s);
     return true;
 }
 

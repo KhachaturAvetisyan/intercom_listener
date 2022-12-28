@@ -36,14 +36,16 @@ using namespace Pistache;
 // structs
 typedef struct
 {
-  uint8_t work_mode;
+  uint8_t  startbyte;
+  uint8_t  working_mode;
   uint16_t firmware_version;
-  uint8_t sim_info;
-  uint8_t con_quality_sim_1;
-  uint8_t con_quality_sim_2;
+  uint8_t  SIM_info;
+  uint8_t  SIM1_connection_quality;
+  uint8_t  SIM2_connection_quality;
   uint16_t battery_voltage;
-  uint32_t updtime_NFC;
-  uint32_t updtime_PIN;
+  uint32_t NFC_list_update_time;
+  uint32_t PIN_list_update_time;
+  uint16_t checksum;
 }ping_struct;
 
 typedef struct

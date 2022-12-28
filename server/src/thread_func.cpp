@@ -29,132 +29,152 @@ void dev_thread(int client_socket)
         dev.send_status(0x00);
         return;
     }
-    if(!dev.Get_device_status())
-    {
-        perror("Get device status error");
-        dev.send_status(0x00);
-        return;
-    }
+    // if(!dev.Get_device_status())
+    // {
+    //     perror("Get device status error");
+    //     dev.send_status(0x00);
+    //     return;
+    // }
     dev.send_status(0x01);
 
     device_map.insert({dev.imei, &dev});
 
-    uint8_t startbyte = 0x01;
-    uint8_t status;
-
-    while(startbyte != 0x00)
+    uint8_t startbyte = dev.read_byte();
+    std::cout << (int)startbyte << "\n";
+    if (startbyte != 0xA1)
     {
-        startbyte = dev.read_byte();
-        if(startbyte == 0xA1)
-        {
-            // Case #02 Ping from device
-            if(!dev.read_ping())
-            {
-                perror("Ping Was not reading");
-                continue;
-            }
-            if(dev.serv_updtime_NFC != dev.dev_updtime_NFC)
-            {
-                // Case #03 Time competition for NFC is false
-                if(!dev.Get_NFC_list())
-                {
-                    perror("Get_NFC_list error");
-                    continue;
-                }
-                if(!dev.separate_data_by_pakets())
-                {
-                    perror("separate_data_by_pakets error");
-                    continue;
-                }
-                if(!dev.Request_for_update(0X00))
-                {
-                    perror("Request_for_update error");
-                    continue;
-                }
-                status = dev.read_byte();
-                if(status == 0x00)
-                {
-                    std::cout << "Do not Update!" << std::endl;
-                    continue;
-                }
-                // else if(status == 0x01)
-                // {
-                //     for(int i = 0; i < dev.paket_count; ++i)
-                //     {
-                //         for(int j = 0; j < 3; ++j)
-                //         {
-                //             if(dev.Data_Body())
-                //                 break;
-                //         }
-                //     }
-                //     if(!dev.Post_device_updtime())
-                //     {
-                //         perror("Post device updtime error");
-                //         continue;
-                //     }
-                // }
-            }
-            if(dev.serv_updtime_PIN != dev.dev_updtime_PIN)
-            {
-                // Case #04 Time competition for PIN is false
-                // if(!dev.Get_PIN_list())
-                // {
-                //     perror("Get_PIN_list error");
-                //     continue;
-                // }
-                // if(!dev.separate_data_by_pakets())
-                // {
-                //     perror("separate_data_by_pakets error");
-                //     continue;
-                // }
-                // if(!dev.Request_for_update())
-                // {
-                //     perror("Request_for_update error");
-                //     continue;
-                // }
-                // status = dev.read_byte();
-                // if(status == 0x00)
-                // {
-                //     sleep(30);
-                //     continue;
-                // }
-                // else if(status == 0x01)
-                // {
-                //     for(int i = 0; i < dev.paket_count; ++i)
-                //     {
-                //         for(int j = 0; j < 3; ++j)
-                //         {
-                //             if(dev.Data_Body())
-                //                 break;
-                //         }
-                //     }
-                //     if(!dev.Post_device_updtime())
-                //     {
-                //         perror("Post device updtime error");
-                //         continue;
-                //     }
-                // }
-
-            }
-        }
-        else if(startbyte == 0xA2)
-        {
-            // Case #06 Post device event
-            if(!dev.read_history())
-            {
-                dev.send_status(0x00);
-                perror("read history error");
-                continue;
-            }
-            if(dev.Post_device_event())
-            {
-                dev.send_status(0x00);
-                perror("Post device event error");
-                continue;
-            }
-            dev.send_status(0x01);
-        }
+        std::cout << "no ping\n";
+        dev.send_status(0x00);
+        return;
     }
+
+    if (!dev.read_ping())
+    {
+        perror("Ping Was not reading");
+        dev.send_status(0x00);
+        return;
+    }
+
+    std::cout << "ping\n";
+    dev.send_status(0x01);
+
+
+    // uint8_t startbyte = 0x01;
+    // uint8_t status;
+
+    // while(startbyte != 0x00)
+    // {
+    //     startbyte = dev.read_byte();
+    //     if(startbyte == 0xA1)
+    //     {
+    //         // Case #02 Ping from device
+    //         if(!dev.read_ping())
+    //         {
+    //             perror("Ping Was not reading");
+    //             continue;
+    //         }
+    //         if(dev.serv_updtime_NFC != dev.dev_updtime_NFC)
+    //         {
+    //             // Case #03 Time competition for NFC is false
+    //             if(!dev.Get_NFC_list())
+    //             {
+    //                 perror("Get_NFC_list error");
+    //                 continue;
+    //             }
+    //             if(!dev.separate_data_by_pakets())
+    //             {
+    //                 perror("separate_data_by_pakets error");
+    //                 continue;
+    //             }
+    //             if(!dev.Request_for_update(0X00))
+    //             {
+    //                 perror("Request_for_update error");
+    //                 continue;
+    //             }
+    //             status = dev.read_byte();
+    //             if(status == 0x00)
+    //             {
+    //                 std::cout << "Do not Update!" << std::endl;
+    //                 continue;
+    //             }
+    //             // else if(status == 0x01)
+    //             // {
+    //             //     for(int i = 0; i < dev.paket_count; ++i)
+    //             //     {
+    //             //         for(int j = 0; j < 3; ++j)
+    //             //         {
+    //             //             if(dev.Data_Body())
+    //             //                 break;
+    //             //         }
+    //             //     }
+    //             //     if(!dev.Post_device_updtime())
+    //             //     {
+    //             //         perror("Post device updtime error");
+    //             //         continue;
+    //             //     }
+    //             // }
+    //         }
+    //         if(dev.serv_updtime_PIN != dev.dev_updtime_PIN)
+    //         {
+    //             // Case #04 Time competition for PIN is false
+    //             // if(!dev.Get_PIN_list())
+    //             // {
+    //             //     perror("Get_PIN_list error");
+    //             //     continue;
+    //             // }
+    //             // if(!dev.separate_data_by_pakets())
+    //             // {
+    //             //     perror("separate_data_by_pakets error");
+    //             //     continue;
+    //             // }
+    //             // if(!dev.Request_for_update())
+    //             // {
+    //             //     perror("Request_for_update error");
+    //             //     continue;
+    //             // }
+    //             // status = dev.read_byte();
+    //             // if(status == 0x00)
+    //             // {
+    //             //     sleep(30);
+    //             //     continue;
+    //             // }
+    //             // else if(status == 0x01)
+    //             // {
+    //             //     for(int i = 0; i < dev.paket_count; ++i)
+    //             //     {
+    //             //         for(int j = 0; j < 3; ++j)
+    //             //         {
+    //             //             if(dev.Data_Body())
+    //             //                 break;
+    //             //         }
+    //             //     }
+    //             //     if(!dev.Post_device_updtime())
+    //             //     {
+    //             //         perror("Post device updtime error");
+    //             //         continue;
+    //             //     }
+    //             // }
+
+    //         }
+    //     }
+    //     else if(startbyte == 0xA2)
+    //     {
+    //         // Case #06 Post device event
+    //         if(!dev.read_history())
+    //         {
+    //             dev.send_status(0x00);
+    //             perror("read history error");
+    //             continue;
+    //         }
+    //         if(dev.Post_device_event())
+    //         {
+    //             dev.send_status(0x00);
+    //             perror("Post device event error");
+    //             continue;
+    //         }
+    //         dev.send_status(0x01);
+    //     }
+    // }
 }
 
 void socket_serv(int port)
