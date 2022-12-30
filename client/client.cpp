@@ -1,15 +1,11 @@
 # include <iostream>
 # include <arpa/inet.h>
-# include <stdio.h>
+# include <cstdio>
 # include <string>
-# include <string.h>
 # include <sys/socket.h>
 # include <unistd.h>
-# include <stdlib.h>
-# include <ctime>
+# include <cstdlib>
 # include <poll.h>
-
-// # include "../utils/send_read.cpp"
 
 # define PORT 8080
 
