@@ -13,7 +13,6 @@ function build_curl()
 
 function build_pistache()
 {
-    pwd
     pushd pistache/
     mkdir -p build/ output/include/ output/lib/
     cd build/
@@ -25,5 +24,16 @@ function build_pistache()
 
 }
 
+function build_json()
+{
+    pushd json/
+    mkdir -p build/ output/
+    cd build/
+    cmake -DJSON_BuildTests=0 -DCMAKE_INSTALL_PREFIX=`realpath ../output/` ..
+    make -j`nproc`
+    popd
+}
+
 build_curl;
 build_pistache;
+build_json;
