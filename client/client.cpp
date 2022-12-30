@@ -100,7 +100,7 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    // delete data;
+    // delete[] data;
 
     struct pollfd mypoll = { sock, POLLIN|POLLPRI };
     uint8_t status;
@@ -183,13 +183,13 @@ int main()
     array[17] = ping.checksum >> 8;
     array[18] = ping.checksum;
 
-    if(send(sock, array, 16, 0) < 0)
+    if(send(sock, array, 19, 0) < 0)
     {
         perror("send error");
         exit(EXIT_FAILURE);
     }
 
-    // delete array;
+    // delete[] array;
 
     // struct pollfd mypoll = { sock, POLLIN|POLLPRI };
     // uint8_t status;

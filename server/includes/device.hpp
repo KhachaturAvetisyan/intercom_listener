@@ -9,6 +9,8 @@ private:
     const int read_timelimit = 30 * 1000;
     const std::string api = "http://localhost:9090/";
     
+    ping_struct serv_ping_data;
+
     int device_socket;
     std::unordered_map<std::string, Device*> *device_map;
 

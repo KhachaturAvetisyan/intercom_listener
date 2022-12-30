@@ -196,8 +196,6 @@ bool Device::read_ping()
 
     if(!read_data(array, 18))
         return false;
-
-    ping_struct serv_ping_data;
     
     serv_ping_data.working_mode = array[0];
     serv_ping_data.firmware_version = ((uint16_t)array[1] << 8) | array[2];
@@ -220,26 +218,17 @@ bool Device::read_ping()
 
     serv_ping_data.checksum = ((uint16_t)array[16] << 8) | array[17];
 
-    std::cout << (int)serv_ping_data.working_mode << "\n";
-    std::cout << (int)serv_ping_data.firmware_version << "\n";
-    std::cout << (int)serv_ping_data.SIM_info << "\n";
-    std::cout << (int)serv_ping_data.SIM1_connection_quality << "\n";
-    std::cout << (int)serv_ping_data.SIM2_connection_quality << "\n";
-    std::cout << (int)serv_ping_data.battery_voltage << "\n";
-    std::cout << serv_ping_data.NFC_list_update_time << "\n";
-    std::cout << serv_ping_data.PIN_list_update_time << "\n";
-    std::cout << serv_ping_data.checksum << "\n";
+    // std::cout << (int)serv_ping_data.working_mode << "\n";
+    // std::cout << (int)serv_ping_data.firmware_version << "\n";
+    // std::cout << (int)serv_ping_data.SIM_info << "\n";
+    // std::cout << (int)serv_ping_data.SIM1_connection_quality << "\n";
+    // std::cout << (int)serv_ping_data.SIM2_connection_quality << "\n";
+    // std::cout << (int)serv_ping_data.battery_voltage << "\n";
+    // std::cout << serv_ping_data.NFC_list_update_time << "\n";
+    // std::cout << serv_ping_data.PIN_list_update_time << "\n";
+    // std::cout << serv_ping_data.checksum << "\n";
 
-    // ping_struct *ping_s;
-    // uint8_t startbyte;
-    // ping_s = (ping_struct*)malloc(sizeof(ping_struct));
-
-    // if(!read_data(ping_s, sizeof(ping_struct)))
-    //     return false;
-    // dev_updtime_NFC = ping_s->updtime_NFC;
-    // dev_updtime_PIN = ping_s->updtime_PIN;
-    // send_status(0X01);
-    // free(ping_s);
+    send_status(0X01);
     return true;
 }
 
