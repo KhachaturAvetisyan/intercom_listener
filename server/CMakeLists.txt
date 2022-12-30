@@ -13,8 +13,8 @@ endif()
 
 # 3rdParty directories.
 set (curl_PATH ${3rdParties_PATH}/curl/output)
+set (pistache_PATH ${3rdParties_PATH}/pistache/output)
 
-include_directories(includes)
 
 add_executable(server
         includes/device.hpp
@@ -23,7 +23,8 @@ add_executable(server
         src/thread_func.cpp
         server.cpp)
 
+target_include_directories(server PUBLIC includes)
 target_link_directories(server PUBLIC ${curl_PATH}/lib)
-#target_link_directories(server PUBLIC ${curl_PATH}/lib)
+target_link_directories(server PUBLIC ${pistache_PATH}/lib)
 
-target_link_libraries(server PUBLIC -lcurl)
+target_link_libraries(server PUBLIC -lcurl -lpistache)

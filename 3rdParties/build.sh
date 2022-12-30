@@ -2,13 +2,28 @@
 
 function build_curl()
 {
-    cd curl/
+    pushd curl/
     mkdir build/ output/
-    pushd build/
-    cmake -DCMAKE_INSTALL_PREFIX=`realpath ../output/` -DBUILD_TESTING=0 .. || echo PIZDEEEEC
-    make -j`nproc` || echo PIZDEEEEEEEEEEEEEEEEEEEEEEEEEEEEC
-    make install || echo JA PIERDOLE KURWAAAAAAAAAAAAAA
+    cd build/
+    cmake -DCMAKE_INSTALL_PREFIX=`realpath ../output/` -DBUILD_TESTING=0 .. 
+    make -j`nproc` 
+    make install 
     popd
 }
 
+function build_pistache()
+{
+    pwd
+    pushd pistache/
+    mkdir -p build/ output/include/ output/lib/
+    cd build/
+    cmake ..
+    make -j`nproc`
+    cp -r include/* ../output/include/
+    cp src/lib* ../output/lib/
+    popd
+
+}
+
 build_curl;
+build_pistache;
