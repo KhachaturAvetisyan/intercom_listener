@@ -3,7 +3,7 @@
 function build_curl()
 {
     pushd curl/
-    mkdir build/ output/
+    mkdir -p build/ output/
     cd build/
     cmake -DCMAKE_INSTALL_PREFIX=`realpath ../output/` -DBUILD_TESTING=0 .. 
     make -j`nproc` 
@@ -18,7 +18,7 @@ function build_pistache()
     cd build/
     cmake ..
     make -j`nproc`
-    cp -r include/* ../output/include/
+    cp -r ../include/* ../output/include/
     cp src/lib* ../output/lib/
     popd
 
@@ -27,10 +27,11 @@ function build_pistache()
 function build_json()
 {
     pushd json/
-    mkdir -p build/ output/
+    mkdir -p build/ output/include 
     cd build/
     cmake -DJSON_BuildTests=0 -DCMAKE_INSTALL_PREFIX=`realpath ../output/` ..
     make -j`nproc`
+    cp -r ../include/* ../output/include/
     popd
 }
 

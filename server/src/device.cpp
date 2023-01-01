@@ -322,6 +322,8 @@ json Device::get_req(std::string url)
   return json::parse(readBuffer);
 }
 
+
+
 bool Device::separate_data_by_pakets()
 {
     if(NFC_list.size() > 0)

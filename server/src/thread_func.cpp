@@ -245,23 +245,25 @@ void socket_serv(int port)
 // Case #05 post request from server about update
 void device_updt(const Rest::Request& req, Http::ResponseWriter resp) 
 {
-    rapidjson::Document doc;
-    doc.Parse(req.body().c_str());
+    // rapidjson::Document doc;
+    // doc.Parse(req.body().c_str());
+
+    json doc = json::parse(req.body());
 
     std::string responseString;
 
-    if(doc.HasMember("imei") && doc.HasMember("updtime_NFC") && doc.HasMember("updtime_PIN")) 
+    if(doc.contains("imei") && doc.contains("updtime_NFC") && doc.contains("updtime_PIN")) 
     {   
-        std::cout << "imei is : " << doc["imei"].GetString() << "\n";
-        std::cout << "updtime_NFC is : " << doc["updtime_NFC"].GetInt() << "\n";
-        std::cout << "updtime_PIN is : " << doc["updtime_PIN"].GetInt() << "\n";
+        std::cout << "imei is : " << doc["imei"] << "\n";
+        std::cout << "updtime_NFC is : " << doc["updtime_NFC"] << "\n";
+        std::cout << "updtime_PIN is : " << doc["updtime_PIN"] << "\n";
 
-        std::string imei = doc["imei"].GetString();
+        std::string imei = doc["imei"];
 
         if(device_map.find(imei) != device_map.end())
         {
-            device_map[imei]->serv_updtime_NFC = doc["updtime_NFC"].GetInt();
-            device_map[imei]->serv_updtime_PIN = doc["updtime_PIN"].GetInt();
+            device_map[imei]->serv_updtime_NFC = doc["updtime_NFC"];
+            device_map[imei]->serv_updtime_PIN = doc["updtime_PIN"];
 
             responseString = "OK";
         }
