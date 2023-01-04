@@ -29,12 +29,12 @@ void dev_thread(int client_socket)
         dev.send_status(0x00);
         return;
     }
-    // if(!dev.Get_device_status())
-    // {
-    //     perror("Get device status error");
-    //     dev.send_status(0x00);
-    //     return;
-    // }
+    if(!dev.Get_device_status())
+    {
+        perror("Get device status error");
+        dev.send_status(0x00);
+        return;
+    }
     dev.send_status(0x01);
 
     device_map.insert({dev.imei, &dev});

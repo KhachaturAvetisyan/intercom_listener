@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(api_server)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 set ( 3rdParties_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../3rdParties )
 set (pistache_PATH ${3rdParties_PATH}/pistache/output)

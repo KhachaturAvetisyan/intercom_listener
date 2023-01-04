@@ -19,7 +19,7 @@ function build_pistache()
     cmake ..
     make -j`nproc`
     cp -r ../include/* ../output/include/
-    cp src/lib* ../output/lib/
+    cp -r src/lib* ../output/lib/
     popd
 
 }

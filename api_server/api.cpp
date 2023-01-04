@@ -3,7 +3,7 @@
 # include <pistache/http.h>
 # include <pistache/router.h>
 
-# include "rapidjson/document.h"
+// # include "rapidjson/document.h"
 
 # include <iostream>
 
@@ -106,8 +106,8 @@ void PIN_list(const Rest::Request& req, Http::ResponseWriter resp)
 
 void device_event(const Rest::Request& req, Http::ResponseWriter resp) 
 {
-    rapidjson::Document doc;
-    doc.Parse(req.body().c_str());
+    // rapidjson::Document doc;
+    // doc.Parse(req.body().c_str());
 
     std::string responseString;
 
@@ -117,8 +117,8 @@ void device_event(const Rest::Request& req, Http::ResponseWriter resp)
 
 void device_updtime(const Rest::Request& req, Http::ResponseWriter resp) 
 {
-    rapidjson::Document doc;
-    doc.Parse(req.body().c_str());
+    // rapidjson::Document doc;
+    // doc.Parse(req.body().c_str());
 
     std::string responseString;
 

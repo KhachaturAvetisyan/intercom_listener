@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(server)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 # Build 3rdParties.
 set ( 3rdParties_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../3rdParties )
@@ -23,6 +23,8 @@ add_executable(server
         src/device.cpp
         src/thread_func.cpp
         server.cpp)
+        
+# set_property(TARGET server PROPERTY CXX_STANDARD 20)
 
 target_include_directories(server PUBLIC includes ${curl_PATH}/include ${pistache_PATH}/include  ${json_PATH}/include)
 target_link_directories(server PUBLIC ${curl_PATH}/lib ${pistache_PATH}/lib)
