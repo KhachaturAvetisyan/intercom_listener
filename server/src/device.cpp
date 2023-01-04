@@ -18,8 +18,11 @@ bool Device::Get_device_status()
 {
     std::string url = api + "device_status/" + imei;
     std::cout << "url is : " << url << "\n";
+
     json res = get_req(url);
-    std::cout << std::setw(4) << res << std::endl;
+    
+    // logs //
+    // std::cout << std::setw(4) << res << std::endl;
     
     if (res.empty())
     {
@@ -186,7 +189,7 @@ bool Device::hand_shake()
     for (int i = 0; i < 15; ++i)
         imei += data[1 + i];
 
-    std::cout << imei << "\n";
+    std::cout << "device imei : " << imei << "\n";
     return true;
 }
 
@@ -312,14 +315,25 @@ json Device::get_req(std::string url)
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
     res = curl_easy_perform(curl);
+    if(res != CURLE_OK)
+    {
+        std::cout << "CURL exeption : " << curl_easy_strerror(res) << "\n";
+        return json({});
+    }
 
-    long http_code = 0;
-    curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
-    std::cout << "code status is : " << http_code << "\n";
+    // logs //
+
+    // long http_code = 0;
+    // curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &http_code);
+    // std::cout << "CURL code status : " << http_code << "\n";
+
     curl_easy_cleanup(curl);
+    
+    return json::parse(readBuffer);
   }
+  else
+    return json({});
 
-  return json::parse(readBuffer);
 }
 
 

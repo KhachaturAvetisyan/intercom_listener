@@ -106,11 +106,11 @@ int main()
 
     if (status != 0x01)
     {
-        std::cout << "status is : error\n";
+        std::cout << "handshake status is : error\n";
         close(client_fd);
         return 0;
     }
-    std::cout << "status is : OK\n";
+    std::cout << "handshake status is : OK\n";
 
 
     // ping
@@ -150,11 +150,11 @@ int main()
 
     if (status != 0x01)
     {
-        std::cout << "status is : error\n";
+        std::cout << "ping status is : error\n";
         close(client_fd);
         return 0;
     }
-    std::cout << "status is : OK\n";
+    std::cout << "ping status is : OK\n";
 
     // while(1)
     // {
