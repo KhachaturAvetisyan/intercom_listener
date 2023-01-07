@@ -115,8 +115,6 @@ int main()
 
     // ping
     ping_struct ping;
-    // upd_request upd;
-    // uint8_t startword;
 
     ping.startbyte = 0xA1;
     ping.working_mode = 0x01;
@@ -129,79 +127,42 @@ int main()
     ping.PIN_list_update_time = 0xFA122112;
     ping.checksum = 13256;
 
-    if(!send_ping(ping, sock))
-    {
-        exit(EXIT_FAILURE);
-    }
 
-    if (poll(&mypoll, 1, 30000))
+    while(1)
     {
-        if(read(sock, &status, 1) < 0)
+        // ping sending
+        if(!send_ping(ping, sock))
         {
-            perror("read msg error");
             exit(EXIT_FAILURE);
         }
-    }
-    else
-    {
-        std::cout << "read timeout\n";
-        return false;
+
+        if (poll(&mypoll, 1, 30000))
+        {
+            if(read(sock, &status, 1) < 0)
+            {
+                perror("read msg error");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else
+        {
+            std::cout << "read timeout\n";
+            return false;
+        }
+
+        if (status != 0x01)
+        {
+            std::cout << "ping status is : error\n";
+            close(client_fd);
+            return 0;
+        }
+        std::cout << "ping status is : OK\n";
+        
+        
+
     }
 
-    if (status != 0x01)
-    {
-        std::cout << "ping status is : error\n";
-        close(client_fd);
-        return 0;
-    }
-    std::cout << "ping status is : OK\n";
 
-    // while(1)
-    // {
-    //     startword = 0XA1;
-    //     if(startword == 0XA1) // ping
-    //     {
-    //         if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
-    //         {
-    //             perror("Ping Startword Did Not Send");
-    //             return (0);
-    //         }
-    //         if(send(sock, &ping, sizeof(ping_struct), 0) < 0)
-    //         {
-    //             perror("Ping Structure Did Not Send");
-    //             return (0);
-    //         }
-    //         if(read(sock, &startword, sizeof(uint8_t)) < 0)
-    //         {
-    //             perror("Response not found");
-    //             return (0);
-    //         }        
-    //         if(startword == 0X01)
-    //         {
-    //             if(read(sock, &upd, sizeof(upd_request)) < 0)
-    //             {
-    //                 perror("requested update was dumped");
-    //                 return (0);
-    //             }
-                
-    //             startword = 0x01;
-    //             if(send(sock, &startword, sizeof(uint8_t), 0) < 0)
-    //             {
-    //                 perror("send to update was dumped");
-    //                 return (0);
-    //             }   
-    //         }
-    //         else
-    //         {
-    //             perror("Rsponse Not returned");
-    //             exit(0);
-    //         } 
-    //     }
-    //     else if(startword == 0XA2) //history
-    //     {
-    //     }
-    //     sleep(5);
-    // }
     // closing the connected socket
     close(client_fd);
     return 0;

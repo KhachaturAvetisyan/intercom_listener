@@ -40,28 +40,6 @@ void dev_thread(int client_socket)
     device_map.insert({dev.imei, &dev});
 
 
-//////////////////////////////////
-    // uint8_t startbyte = dev.read_byte();
-    // std::cout << (int)startbyte << "\n";
-    // if (startbyte != 0xA1)
-    // {
-    //     std::cout << "no ping\n";
-    //     dev.send_status(0x00);
-    //     return;
-    // }
-
-    // if (!dev.read_ping())
-    // {
-    //     perror("Ping Was not reading");
-    //     dev.send_status(0x00);
-    //     return;
-    // }
-
-    // std::cout << "ping\n";
-    // dev.send_status(0x01);
-////////////////////////////////
-
-
     uint8_t startbyte = 0x01;
     uint8_t status;
 
@@ -77,7 +55,7 @@ void dev_thread(int client_socket)
                 dev.send_status(0x00);
                 continue;
             }
-            if(dev.serv_updtime_NFC != dev.dev_updtime_NFC)
+            if(dev.serv_updtime_NFC != dev.serv_ping_data.NFC_list_update_time)
             {
                 // Case #03 Time competition for NFC is false
                 if(!dev.Get_NFC_list())
@@ -118,7 +96,7 @@ void dev_thread(int client_socket)
                 //     }
                 // }
             }
-            if(dev.serv_updtime_PIN != dev.dev_updtime_PIN)
+            if(dev.serv_updtime_PIN != dev.serv_ping_data.PIN_list_update_time)
             {
                 // Case #04 Time competition for PIN is false
                 // if(!dev.Get_PIN_list())

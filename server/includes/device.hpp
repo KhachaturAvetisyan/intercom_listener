@@ -8,8 +8,6 @@ class Device
 private:
     const int read_timelimit = 30 * 1000;
     const std::string api = "http://localhost:9090/";
-    
-    ping_struct serv_ping_data;
 
     int device_socket;
     std::unordered_map<std::string, Device*> *device_map;
@@ -35,9 +33,11 @@ public:
     std::string imei;
     uint32_t serv_updtime_NFC = 0;
     uint32_t serv_updtime_PIN = 0;
-    uint32_t dev_updtime_NFC = 0;
-    uint32_t dev_updtime_PIN = 0;
+    // uint32_t dev_updtime_NFC = 0;
+    // uint32_t dev_updtime_PIN = 0;
     uint8_t paket_count;
+
+    ping_struct serv_ping_data;
 
     // class constructor destructor
     Device(int dev_sock, std::unordered_map<std::string, Device*> *device_map);

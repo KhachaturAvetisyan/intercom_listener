@@ -1,4 +1,4 @@
-# include "../includes/serv_include.hpp"
+# include "../includes/device.hpp"
 
 // class constructor
 Device::Device(int dev_sock, std::unordered_map<std::string, Device*> *dev_map) : device_socket(dev_sock), device_map(dev_map)
@@ -104,8 +104,8 @@ bool Device::Post_device_updtime()
     json req = 
     {
         {"imei", imei},
-        {"updtime_NFC", dev_updtime_NFC},
-        {"updtime_PIN", dev_updtime_PIN}
+        {"updtime_NFC", serv_ping_data.NFC_list_update_time},
+        {"updtime_PIN", serv_ping_data.PIN_list_update_time}
     };
 
     std::string res = post_req(api + "", req);
