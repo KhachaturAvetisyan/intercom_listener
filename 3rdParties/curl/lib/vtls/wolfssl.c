@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -640,16 +640,21 @@ wolfssl_connect_step1(struct Curl_cfilter *cf, struct Curl_easy *data)
     /* wolfSSL's ALPN protocol name list format is a comma separated string of
        protocols in descending order of preference, eg: "h2,http/1.1" */
 
-#ifdef USE_HTTP2
-    if(data->state.httpwant >= CURL_HTTP_VERSION_2) {
-      strcpy(protocols + strlen(protocols), ALPN_H2 ",");
-      infof(data, VTLS_INFOF_ALPN_OFFER_1STR, ALPN_H2);
+    if(data->state.httpwant == CURL_HTTP_VERSION_1_0) {
+      strcpy(protocols, ALPN_HTTP_1_0);
+      infof(data, VTLS_INFOF_ALPN_OFFER_1STR, ALPN_HTTP_1_0);
     }
+    else {
+#ifdef USE_HTTP2
+      if(data->state.httpwant >= CURL_HTTP_VERSION_2) {
+        strcpy(protocols + strlen(protocols), ALPN_H2 ",");
+        infof(data, VTLS_INFOF_ALPN_OFFER_1STR, ALPN_H2);
+      }
 #endif
 
-    strcpy(protocols + strlen(protocols), ALPN_HTTP_1_1);
-    infof(data, VTLS_INFOF_ALPN_OFFER_1STR, ALPN_HTTP_1_1);
-
+      strcpy(protocols + strlen(protocols), ALPN_HTTP_1_1);
+      infof(data, VTLS_INFOF_ALPN_OFFER_1STR, ALPN_HTTP_1_1);
+    }
     if(wolfSSL_UseALPN(backend->handle, protocols,
                        (unsigned)strlen(protocols),
                        WOLFSSL_ALPN_CONTINUE_ON_MISMATCH) != SSL_SUCCESS) {

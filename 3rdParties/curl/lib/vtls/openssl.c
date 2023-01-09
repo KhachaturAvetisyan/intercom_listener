@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -95,6 +95,10 @@
 /* The last #include files should be: */
 #include "curl_memory.h"
 #include "memdebug.h"
+
+
+#define DEBUG_ME  0
+
 
 /* Uncomment the ALLOW_RENEG line to a real #define if you want to allow TLS
    renegotiations when built with BoringSSL. Renegotiating is non-compliant
@@ -706,8 +710,10 @@ static int bio_cf_out_write(BIO *bio, const char *buf, int blen)
 
   DEBUGASSERT(data);
   nwritten = Curl_conn_cf_send(cf->next, data, buf, blen, &result);
-  /* DEBUGF(infof(data, CFMSG(cf, "bio_cf_out_write(len=%d) -> %d, err=%d"),
-         blen, (int)nwritten, result)); */
+#if DEBUG_ME
+  DEBUGF(infof(data, CFMSG(cf, "bio_cf_out_write(len=%d) -> %d, err=%d"),
+         blen, (int)nwritten, result));
+#endif
   BIO_clear_retry_flags(bio);
   connssl->backend->io_result = result;
   if(nwritten < 0) {
@@ -731,8 +737,10 @@ static int bio_cf_in_read(BIO *bio, char *buf, int blen)
     return 0;
 
   nread = Curl_conn_cf_recv(cf->next, data, buf, blen, &result);
-  /* DEBUGF(infof(data, CFMSG(cf, "bio_cf_in_read(len=%d) -> %d, err=%d"),
-         blen, (int)nread, result)); */
+#if DEBUG_ME
+  DEBUGF(infof(data, CFMSG(cf, "bio_cf_in_read(len=%d) -> %d, err=%d"),
+         blen, (int)nread, result));
+#endif
   BIO_clear_retry_flags(bio);
   connssl->backend->io_result = result;
   if(nread < 0) {
@@ -2630,13 +2638,13 @@ static void ossl_trace(int direction, int ssl_ver, int content_type,
                        const void *buf, size_t len, SSL *ssl,
                        void *userp)
 {
-  char unknown[32];
-  const char *verstr = NULL;
+  const char *verstr = "???";
   struct connectdata *conn = userp;
   int cf_idx = ossl_get_ssl_cf_index();
   struct ssl_connect_data *connssl;
   struct Curl_easy *data = NULL;
   struct Curl_cfilter *cf;
+  char unknown[32];
 
   DEBUGASSERT(cf_idx >= 0);
   cf = (struct Curl_cfilter*) SSL_get_ex_data(ssl, cf_idx);
@@ -2646,8 +2654,8 @@ static void ossl_trace(int direction, int ssl_ver, int content_type,
   DEBUGASSERT(connssl->backend);
   data = connssl->call_data;
 
-  if(!conn || !data || !data->set.fdebug ||
-     (direction != 0 && direction != 1))
+  if(!conn || !data || !data->set.fdebug
+     || (direction != 0 && direction != 1))
     return;
 
  switch(ssl_ver) {
@@ -3448,6 +3456,7 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
   struct ssl_primary_config *conn_config = Curl_ssl_cf_get_primary_config(cf);
   struct ssl_config_data *ssl_config = Curl_ssl_cf_get_config(cf, data);
   BIO *bio;
+  int cf_idx = ossl_get_ssl_cf_index();
 
 #ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
   bool sni;
@@ -3460,9 +3469,6 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
 #endif
 #endif
   const long int ssl_version = conn_config->version;
-#ifdef USE_OPENSSL_SRP
-  const enum CURL_TLSAUTH ssl_authtype = ssl_config->primary.authtype;
-#endif
   char * const ssl_cert = ssl_config->primary.clientcert;
   const struct curl_blob *ssl_cert_blob = ssl_config->primary.cert_blob;
   const char * const ssl_cert_type = ssl_config->cert_type;
@@ -3472,6 +3478,9 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
 
   DEBUGASSERT(ssl_connect_1 == connssl->connecting_state);
   DEBUGASSERT(backend);
+
+  if(cf_idx < 0)
+    return CURLE_FAILED_INIT;
 
   /* Make funny stuff to get random input */
   result = ossl_seed(data);
@@ -3630,25 +3639,32 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
     int cur = 0;
     unsigned char protocols[128];
 
-#ifdef USE_HTTP2
-    if(data->state.httpwant >= CURL_HTTP_VERSION_2
-#ifndef CURL_DISABLE_PROXY
-       && (!Curl_ssl_cf_is_proxy(cf) || !cf->conn->bits.tunnel_proxy)
-#endif
-      ) {
-      protocols[cur++] = ALPN_H2_LENGTH;
-
-      memcpy(&protocols[cur], ALPN_H2, ALPN_H2_LENGTH);
-      cur += ALPN_H2_LENGTH;
-      infof(data, VTLS_INFOF_ALPN_OFFER_1STR, ALPN_H2);
+    if(data->state.httpwant == CURL_HTTP_VERSION_1_0) {
+      protocols[cur++] = ALPN_HTTP_1_0_LENGTH;
+      memcpy(&protocols[cur], ALPN_HTTP_1_0, ALPN_HTTP_1_0_LENGTH);
+      cur += ALPN_HTTP_1_0_LENGTH;
+      infof(data, VTLS_INFOF_ALPN_OFFER_1STR, ALPN_HTTP_1_0);
     }
+    else {
+#ifdef USE_HTTP2
+      if(data->state.httpwant >= CURL_HTTP_VERSION_2
+#ifndef CURL_DISABLE_PROXY
+         && (!Curl_ssl_cf_is_proxy(cf) || !cf->conn->bits.tunnel_proxy)
+#endif
+        ) {
+        protocols[cur++] = ALPN_H2_LENGTH;
+
+        memcpy(&protocols[cur], ALPN_H2, ALPN_H2_LENGTH);
+        cur += ALPN_H2_LENGTH;
+        infof(data, VTLS_INFOF_ALPN_OFFER_1STR, ALPN_H2);
+      }
 #endif
 
-    protocols[cur++] = ALPN_HTTP_1_1_LENGTH;
-    memcpy(&protocols[cur], ALPN_HTTP_1_1, ALPN_HTTP_1_1_LENGTH);
-    cur += ALPN_HTTP_1_1_LENGTH;
-    infof(data, VTLS_INFOF_ALPN_OFFER_1STR, ALPN_HTTP_1_1);
-
+      protocols[cur++] = ALPN_HTTP_1_1_LENGTH;
+      memcpy(&protocols[cur], ALPN_HTTP_1_1, ALPN_HTTP_1_1_LENGTH);
+      cur += ALPN_HTTP_1_1_LENGTH;
+      infof(data, VTLS_INFOF_ALPN_OFFER_1STR, ALPN_HTTP_1_1);
+    }
     /* expects length prefixed preference ordered list of protocols in wire
      * format
      */
@@ -3713,8 +3729,7 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
 #endif
 
 #ifdef USE_OPENSSL_SRP
-  if((ssl_authtype == CURL_TLSAUTH_SRP) &&
-     Curl_auth_allowed_to_host(data)) {
+  if(ssl_config->primary.username && Curl_auth_allowed_to_host(data)) {
     char * const ssl_username = ssl_config->primary.username;
     char * const ssl_password = ssl_config->primary.password;
     infof(data, "Using TLS-SRP username: %s", ssl_username);
@@ -3784,6 +3799,8 @@ static CURLcode ossl_connect_step1(struct Curl_cfilter *cf,
     failf(data, "SSL: couldn't create a context (handle)");
     return CURLE_OUT_OF_MEMORY;
   }
+
+  SSL_set_ex_data(backend->handle, cf_idx, cf);
 
 #if (OPENSSL_VERSION_NUMBER >= 0x0090808fL) && !defined(OPENSSL_NO_TLSEXT) && \
     !defined(OPENSSL_NO_OCSP)

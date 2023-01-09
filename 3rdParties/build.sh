@@ -5,7 +5,7 @@ function build_curl()
     pushd curl/
     mkdir -p build/ output/
     cd build/
-    cmake -DCMAKE_INSTALL_PREFIX=`realpath ../output/` -DBUILD_TESTING=0 .. 
+    cmake -DCMAKE_INSTALL_PREFIX=`realpath ../output/` -DBUILD_TESTING=0 ..
     make -j`nproc` 
     make install 
     popd

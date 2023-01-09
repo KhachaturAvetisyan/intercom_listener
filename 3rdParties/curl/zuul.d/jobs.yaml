@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 2021 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -68,24 +68,6 @@
         C: >-
           --with-openssl={{ ansible_user_dir }}/boringssl
         LD_LIBRARY_PATH: "{{ ansible_user_dir }}/boringssl/lib:/usr/local/lib"
-
-- job:
-    name: curl-novalgrind-boringssl-with-openssl-quiche
-    parent: curl-base
-    vars:
-      curl_apt_packages:
-        - libpsl-dev
-        - libbrotli-dev
-        - libzstd-dev
-      curl_env:
-        CC: gcc-8
-        CXX: g++-8
-        T: novalgrind
-        QUICHE: "yes"
-        C: >-
-          --with-openssl={{ ansible_user_dir }}/quiche/quiche/deps/boringssl/src
-          --with-quiche={{ ansible_user_dir }}/quiche/target/release
-        LD_LIBRARY_PATH: "{{ ansible_user_dir }}/quiche/target/release:/usr/local/lib"
 
 - job:
     name: curl-novalgrind-ngtcp2-with-openssl
@@ -218,7 +200,6 @@
       jobs:
       - curl-normal-with-openssl-gssapi-libssh2-checksrc
       - curl-novalgrind-boringssl-with-openssl
-      - curl-novalgrind-boringssl-with-openssl-quiche
       - curl-novalgrind-ngtcp2-with-openssl
       - curl-debug-clang-disable-alt-svc-with-openssl
       - curl-debug-clang-with-gnutls

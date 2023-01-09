@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -895,6 +895,10 @@ static void HandshakeCallback(PRFileDesc *sock, void *arg)
     if(buflen == ALPN_HTTP_1_1_LENGTH &&
        !memcmp(ALPN_HTTP_1_1, buf, ALPN_HTTP_1_1_LENGTH)) {
       cf->conn->alpn = CURL_HTTP_VERSION_1_1;
+    }
+    else if(buflen == ALPN_HTTP_1_0_LENGTH &&
+            !memcmp(ALPN_HTTP_1_0, buf, ALPN_HTTP_1_0_LENGTH)) {
+      cf->conn->alpn = CURL_HTTP_VERSION_1_0;
     }
 
     /* This callback might get called when PR_Recv() is used within
@@ -2167,20 +2171,27 @@ static CURLcode nss_setup_connect(struct Curl_cfilter *cf,
     int cur = 0;
     unsigned char protocols[128];
 
-#ifdef USE_HTTP2
-    if(data->state.httpwant >= CURL_HTTP_VERSION_2
-#ifndef CURL_DISABLE_PROXY
-       && (!Curl_ssl_cf_is_proxy(cf) || !cf->conn->bits.tunnel_proxy)
-#endif
-      ) {
-      protocols[cur++] = ALPN_H2_LENGTH;
-      memcpy(&protocols[cur], ALPN_H2, ALPN_H2_LENGTH);
-      cur += ALPN_H2_LENGTH;
+    if(data->state.httpwant == CURL_HTTP_VERSION_1_0) {
+      protocols[cur++] = ALPN_HTTP_1_0_LENGTH;
+      memcpy(&protocols[cur], ALPN_HTTP_1_0, ALPN_HTTP_1_0_LENGTH);
+      cur += ALPN_HTTP_1_0_LENGTH;
     }
+    else {
+#ifdef USE_HTTP2
+      if(data->state.httpwant >= CURL_HTTP_VERSION_2
+#ifndef CURL_DISABLE_PROXY
+         && (!Curl_ssl_cf_is_proxy(cf) || !cf->conn->bits.tunnel_proxy)
 #endif
-    protocols[cur++] = ALPN_HTTP_1_1_LENGTH;
-    memcpy(&protocols[cur], ALPN_HTTP_1_1, ALPN_HTTP_1_1_LENGTH);
-    cur += ALPN_HTTP_1_1_LENGTH;
+        ) {
+        protocols[cur++] = ALPN_H2_LENGTH;
+        memcpy(&protocols[cur], ALPN_H2, ALPN_H2_LENGTH);
+        cur += ALPN_H2_LENGTH;
+      }
+#endif
+      protocols[cur++] = ALPN_HTTP_1_1_LENGTH;
+      memcpy(&protocols[cur], ALPN_HTTP_1_1, ALPN_HTTP_1_1_LENGTH);
+      cur += ALPN_HTTP_1_1_LENGTH;
+    }
 
     if(SSL_SetNextProtoNego(backend->handle, protocols, cur) != SECSuccess)
       goto error;
@@ -2393,6 +2404,19 @@ static ssize_t nss_send(struct Curl_cfilter *cf,
   return rc; /* number of bytes */
 }
 
+static bool
+nss_data_pending(struct Curl_cfilter *cf, const struct Curl_easy *data)
+{
+  struct ssl_connect_data *connssl = cf->ctx;
+  PRFileDesc *fd = connssl->backend->handle->lower;
+  char buf;
+
+  (void) data;
+
+  /* Returns true in case of error to force reading. */
+  return PR_Recv(fd, (void *) &buf, 1, PR_MSG_PEEK, PR_INTERVAL_NO_WAIT) != 0;
+}
+
 static ssize_t nss_recv(struct Curl_cfilter *cf,
                         struct Curl_easy *data,    /* transfer */
                         char *buf,             /* store read data here */
@@ -2543,7 +2567,7 @@ const struct Curl_ssl Curl_ssl_nss = {
   nss_check_cxn,                /* check_cxn */
   /* NSS has no shutdown function provided and thus always fail */
   Curl_none_shutdown,           /* shutdown */
-  Curl_none_data_pending,       /* data_pending */
+  nss_data_pending,             /* data_pending */
   nss_random,                   /* random */
   nss_cert_status_request,      /* cert_status_request */
   nss_connect,                  /* connect */

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -301,7 +301,7 @@ CURLcode Curl_write(struct Curl_easy *data,
   DEBUGASSERT(data);
   DEBUGASSERT(data->conn);
   conn = data->conn;
-  num = (sockfd == conn->sock[SECONDARYSOCKET]);
+  num = (sockfd != CURL_SOCKET_BAD && sockfd == conn->sock[SECONDARYSOCKET]);
 
 #ifdef CURLDEBUG
   {
@@ -363,7 +363,8 @@ ssize_t Curl_send_plain(struct Curl_easy *data, int num,
 #if defined(MSG_FASTOPEN) && !defined(TCP_FASTOPEN_CONNECT) /* Linux */
   if(conn->bits.tcp_fastopen) {
     bytes_written = sendto(sockfd, mem, len, MSG_FASTOPEN,
-                           conn->ip_addr->ai_addr, conn->ip_addr->ai_addrlen);
+                           &conn->remote_addr->sa_addr,
+                           conn->remote_addr->addrlen);
     conn->bits.tcp_fastopen = FALSE;
   }
   else
@@ -498,8 +499,7 @@ static CURLcode pausewrite(struct Curl_easy *data,
   unsigned int i;
   bool newtype = TRUE;
 
-  /* If this transfers over HTTP/2, pause the stream! */
-  Curl_http2_stream_pause(data, TRUE);
+  Curl_conn_ev_data_pause(data, TRUE);
 
   if(s->tempcount) {
     for(i = 0; i< s->tempcount; i++) {

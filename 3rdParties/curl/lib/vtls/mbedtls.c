@@ -5,8 +5,8 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2012 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
- * Copyright (C) 2010 - 2011, Hoi-Ho Chan, <hoiho.chan@gmail.com>
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Hoi-Ho Chan, <hoiho.chan@gmail.com>
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -650,11 +650,16 @@ mbed_connect_step1(struct Curl_cfilter *cf, struct Curl_easy *data)
 #ifdef HAS_ALPN
   if(cf->conn->bits.tls_enable_alpn) {
     const char **p = &backend->protocols[0];
+    if(data->state.httpwant == CURL_HTTP_VERSION_1_0) {
+      *p++ = ALPN_HTTP_1_0;
+    }
+    else {
 #ifdef USE_HTTP2
-    if(data->state.httpwant >= CURL_HTTP_VERSION_2)
-      *p++ = ALPN_H2;
+      if(data->state.httpwant >= CURL_HTTP_VERSION_2)
+        *p++ = ALPN_H2;
 #endif
-    *p++ = ALPN_HTTP_1_1;
+      *p++ = ALPN_HTTP_1_1;
+    }
     *p = NULL;
     /* this function doesn't clone the protocols array, which is why we need
        to keep it around */

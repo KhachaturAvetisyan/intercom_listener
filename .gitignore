@@ -1,7 +1,10 @@
 .vscode
+.idea
 
 build
-server.out
-client.out
-api_curl.out
-api.out
+cmake-build-debug
+
+# server.out
+# client.out
+# api_curl.out
+# api.out
