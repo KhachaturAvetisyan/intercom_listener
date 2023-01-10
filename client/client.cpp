@@ -2,6 +2,8 @@
 
 bool send_ping(ping_struct& ping, int sock)
 {
+    std::cout << "send ping\n";
+
     uint8_t array[19];
 
     array[0] = ping.startbyte;
@@ -38,6 +40,30 @@ bool send_ping(ping_struct& ping, int sock)
     return true;
 }
 
+bool send_handshake(std::string imei, int sock)
+{
+    std::cout << "send handshake\n";
+
+    uint8_t startword = 0xFE;
+
+    uint8_t data[16];
+
+    data[0] = startword;
+    for (int i = 0; i < 15; ++i)
+        data[1 + i] = imei[i];
+    
+    // std::cout << "sleep 5 sec\n";
+    // sleep(5);
+
+    if(send(sock, data, 16, 0) < 0)
+    {
+        perror("send error");
+        return false;
+    }
+    
+    return true;
+}
+
 int main()
 {
     // create socket
@@ -67,26 +93,17 @@ int main()
     }
 
     // handshake
-    uint8_t startword = 0xFE;
     
     // std::string imei = "767738917568351";
     std::string imei = "859038861542972";
 
-    uint8_t data[16];
-
-    data[0] = startword;
-    for (int i = 0; i < 15; ++i)
-        data[1 + i] = imei[i];
-    
-    // std::cout << "sleep 5 sec\n";
-    // sleep(5);
-
-    if(send(sock, data, 16, 0) < 0)
+    // ping sending
+    if(!send_handshake(imei, sock))
     {
-        perror("send error");
         exit(EXIT_FAILURE);
     }
-
+    
+    // read handshake status
     struct pollfd mypoll = { sock, POLLIN|POLLPRI };
     uint8_t status;
 
@@ -113,7 +130,7 @@ int main()
     std::cout << "handshake status is : OK\n";
 
 
-    // ping
+    // ping init
     ping_struct ping;
 
     ping.startbyte = 0xA1;
@@ -136,6 +153,7 @@ int main()
             exit(EXIT_FAILURE);
         }
 
+        // read ping status
         if (poll(&mypoll, 1, 30000))
         {
             if(read(sock, &status, 1) < 0)
@@ -158,7 +176,7 @@ int main()
         }
         std::cout << "ping status is : OK\n";
         
-        
+        sleep(5);
 
     }
 

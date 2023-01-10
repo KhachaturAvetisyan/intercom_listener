@@ -10,6 +10,7 @@ private:
     const std::string api = "http://localhost:9090/";
 
     int device_socket;
+    int thread_num;
     std::unordered_map<std::string, Device*> *device_map;
 
     history_struct* history_s;
@@ -40,7 +41,7 @@ public:
     ping_struct serv_ping_data;
 
     // class constructor destructor
-    Device(int dev_sock, std::unordered_map<std::string, Device*> *device_map);
+    Device(int dev_sock, int thread_num, std::unordered_map<std::string, Device*> *device_map);
     ~Device();
 
     // Device to listener read functions

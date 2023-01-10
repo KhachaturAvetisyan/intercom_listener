@@ -1,7 +1,7 @@
 # include "../includes/device.hpp"
 
 // class constructor
-Device::Device(int dev_sock, std::unordered_map<std::string, Device*> *dev_map) : device_socket(dev_sock), device_map(dev_map)
+Device::Device(int dev_sock, int thr_num,  std::unordered_map<std::string, Device*> *dev_map) : device_socket(dev_sock), thread_num(thr_num), device_map(dev_map)
 {}
 // class destructor
 Device::~Device()
@@ -16,8 +16,11 @@ Device::~Device()
 // listener to server requests
 bool Device::Get_device_status()
 {
+    //logs
+    std::cout << "Thread " << thread_num << " : " << "Get device status requests\n";
+
     std::string url = api + "device_status/" + imei;
-    std::cout << "url is : " << url << "\n";
+    // std::cout << "url is : " << url << "\n";
 
     json res = get_req(url);
     
@@ -49,7 +52,9 @@ bool Device::Get_device_status()
 bool Device::Get_NFC_list()
 {
     json res = get_req(api + "NFC_list/" + imei);
-    std::cout << std::setw(4) << res << std::endl;
+    // logs
+    std::cout << "Thread " << thread_num << " : " <<  "Get NFC list reaquests\n";
+    // std::cout << std::setw(4) << res << std::endl;
 
     if(res.empty())
     {
@@ -65,7 +70,8 @@ bool Device::Get_NFC_list()
 bool Device::Get_PIN_list()
 {
     json res = get_req(api + "?imei=" + imei);
-    std::cout << std::setw(4) << res << std::endl;
+    // logs
+    // std::cout << std::setw(4) << res << std::endl;
 
     if(res.empty())
     {
@@ -175,6 +181,9 @@ uint8_t Device::read_byte()
 // listener to device send & read functions
 bool Device::hand_shake()
 {
+    //logs
+    std::cout << "Thread " << thread_num << " : " << "read hand shake\n";
+
     uint8_t data[16];
     if(!read_data(&data, 16))
         return false;
@@ -195,10 +204,16 @@ bool Device::hand_shake()
 
 bool Device::read_ping()
 {
+    //logs
+    std::cout << "Thread " << thread_num << " : " << "ping\n";
+
     uint8_t array[18];
 
     if(!read_data(array, 18))
+    {
+        send_status(0x00);
         return false;
+    }
     
     serv_ping_data.working_mode = array[0];
     serv_ping_data.firmware_version = ((uint16_t)array[1] << 8) | array[2];

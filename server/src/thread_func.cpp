@@ -17,10 +17,12 @@
 
 std::unordered_map<std::string, Device*> device_map;
 
-void dev_thread(int client_socket)
+void dev_thread(int client_socket, int thread_num)
 {
-    std::cout << "create new thread\n";
-    Device dev(client_socket, &device_map);
+    //logs
+    std::cout << "Thread " << thread_num << " : " << "create new thread\n";
+    
+    Device dev(client_socket, thread_num, &device_map);
     
     // Case #01 Device connection
     if(!dev.hand_shake())
@@ -49,36 +51,41 @@ void dev_thread(int client_socket)
         if(startbyte == 0xA1)
         {
             // Case #02 Ping from device
+
             if(!dev.read_ping())
             {
                 perror("Ping Was not reading");
-                dev.send_status(0x00);
                 continue;
             }
+
+            // check NFC update 
             if(dev.serv_updtime_NFC != dev.serv_ping_data.NFC_list_update_time)
             {
+                // logs
+                std::cout << "Thread " << thread_num << " : " << "NFC list update\n";
+
                 // Case #03 Time competition for NFC is false
-                if(!dev.Get_NFC_list())
-                {
-                    perror("Get_NFC_list error");
-                    continue;
-                }
-                if(!dev.separate_data_by_pakets())
-                {
-                    perror("separate_data_by_pakets error");
-                    continue;
-                }
-                if(!dev.Request_for_update(0X00))
-                {
-                    perror("Request_for_update error");
-                    continue;
-                }
-                status = dev.read_byte();
-                if(status == 0x00)
-                {
-                    std::cout << "Do not Update!" << std::endl;
-                    continue;
-                }
+                // if(!dev.Get_NFC_list())
+                // {
+                //     perror("Get_NFC_list error");
+                //     continue;
+                // }
+                // if(!dev.separate_data_by_pakets())
+                // {
+                //     perror("separate_data_by_pakets error");
+                //     continue;
+                // }
+                // if(!dev.Request_for_update(0X00))
+                // {
+                //     perror("Request_for_update error");
+                //     continue;
+                // }
+                // status = dev.read_byte();
+                // if(status == 0x00)
+                // {
+                //     std::cout << "Do not Update!" << std::endl;
+                //     continue;
+                // }
                 // else if(status == 0x01)
                 // {
                 //     for(int i = 0; i < dev.paket_count; ++i)
@@ -96,8 +103,12 @@ void dev_thread(int client_socket)
                 //     }
                 // }
             }
+            // check PIN update
             if(dev.serv_updtime_PIN != dev.serv_ping_data.PIN_list_update_time)
             {
+                // logs
+                std::cout << "Thread " << thread_num << " : " << "PIN list update\n";
+
                 // Case #04 Time competition for PIN is false
                 // if(!dev.Get_PIN_list())
                 // {
@@ -141,7 +152,7 @@ void dev_thread(int client_socket)
         }
         else if(startbyte == 0xA2)
         {
-            // Case #06 Post device event
+            // Case #06 Post device event (history)
             if(!dev.read_history())
             {
                 dev.send_status(0x00);
@@ -192,26 +203,30 @@ void socket_serv(int port)
         exit(EXIT_FAILURE);
     }
 
-    std::cout << "binding access!\n";
     std::vector<std::thread> threads;
+    int thread_num = 1;
 
     while(1)
     {
-        std::cout << "listening\n";
+        // logs
+        std::cout << "Socket server: listening\n";
+
         if (listen(server_fd, 1) < 0) 
         {
             perror("listen");
             exit(EXIT_FAILURE);
         }
 
-        std::cout << "accept\n";
+        // logs
+        std::cout << "Socket server: accept device\n";
+        
         if ((new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0) 
         {
             perror("accept");
             exit(EXIT_FAILURE);
         }
 
-        threads.push_back(std::thread(dev_thread, new_socket));
+        threads.push_back(std::thread(dev_thread, new_socket, thread_num++));
 
     }
 
@@ -223,18 +238,16 @@ void socket_serv(int port)
 // Case #05 post request from server about update
 void device_updt(const Rest::Request& req, Http::ResponseWriter resp) 
 {
-    // rapidjson::Document doc;
-    // doc.Parse(req.body().c_str());
-
     json doc = json::parse(req.body());
 
     std::string responseString;
 
     if(doc.contains("imei") && doc.contains("updtime_NFC") && doc.contains("updtime_PIN")) 
     {   
-        std::cout << "imei is : " << doc["imei"] << "\n";
-        std::cout << "updtime_NFC is : " << doc["updtime_NFC"] << "\n";
-        std::cout << "updtime_PIN is : " << doc["updtime_PIN"] << "\n";
+        //logs
+        std::cout << "HTTP server: " << "imei is : " << doc["imei"] << "\n";
+        std::cout << "HTTP server: " << "updtime_NFC is : " << doc["updtime_NFC"] << "\n";
+        std::cout << "HTTP server: " << "updtime_PIN is : " << doc["updtime_PIN"] << "\n";
 
         std::string imei = doc["imei"];
 
@@ -251,8 +264,9 @@ void device_updt(const Rest::Request& req, Http::ResponseWriter resp)
     }
     else
         responseString = "No text parameter supplied in JSON:\n" + req.body();
-
-    std::cout << responseString << "\n";
+    //logs
+    std::cout << "HTTP server: response msg -> " << responseString << "\n";
+    
     resp.send(Http::Code::Ok, responseString);
 }
 
@@ -265,7 +279,10 @@ void http_serv(int port_)
     Address addr(Ipv4::any(), port);
     std::shared_ptr<Http::Endpoint> endpoint = std::make_shared<Http::Endpoint>(addr);
     auto opts = Http::Endpoint::options().threads(1);   // how many threads for the server
-    std::cout << "run http server\n";
+    
+    //logs
+    std::cout << "HTTP server: server started\n";
+    
     endpoint->init(opts);
     Routes::Post(router, "/device_updt", Routes::bind(&device_updt));
     endpoint->setHandler(router.handler());
