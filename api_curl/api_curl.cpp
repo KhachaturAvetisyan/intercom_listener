@@ -87,7 +87,7 @@ json get_req(std::string url)
 
 int main(void)
 {
-  json req = {{"imei", "859038861542972"}, {"updtime_NFC", 131345}, {"updtime_PIN", 456457}};
+  json req = {{"imei", "859038861542972"}, {"updtime_NFC", 0xFF122112}, {"updtime_PIN", 0xFF122112}};
 
   // json j2 = get_req("http://localhost:9090/device_status/859038861542972");
   std::cout << post_req("http://localhost:9900/device_updt", req) << "\n";

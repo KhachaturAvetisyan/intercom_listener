@@ -20,10 +20,11 @@ typedef struct
 
 typedef struct
 {
-  uint32_t time;
-  uint8_t type; // 0x00 - NFC & 0x01 - PIN
+  uint8_t startbyte;
+  uint32_t event_time;
+  uint8_t event_type;
   uint64_t value;
-  uint16_t crc;
+  uint16_t checksum;
 }history_struct;
 
 typedef struct

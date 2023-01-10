@@ -28,17 +28,17 @@ int glob;
 
 void thread_func(int thread_num)
 {
-    l.lock();
+    // l.lock();
     int imei = rand();
     std::cout << thread_num << " : " << imei << "\n";
-    glob = imei;
-    // map.insert({imei, rand()});
-    // std::cout << "\n";
+    // glob = imei;
+    map.insert({thread_num, imei});
+    std::cout << "\n";
     // for(auto i : map)
     // {
     //     std::cout << i.first << " -> " << i.second << "\n";
     // }
-    l.unlock();
+    // l.unlock();
 }
 
 int main()

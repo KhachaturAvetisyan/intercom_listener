@@ -34,11 +34,10 @@ public:
     std::string imei;
     uint32_t serv_updtime_NFC = 0;
     uint32_t serv_updtime_PIN = 0;
-    // uint32_t dev_updtime_NFC = 0;
-    // uint32_t dev_updtime_PIN = 0;
     uint8_t paket_count;
 
-    ping_struct serv_ping_data;
+    ping_struct device_ping_data;
+    history_struct device_history_data;
 
     // class constructor destructor
     Device(int dev_sock, int thread_num, std::unordered_map<std::string, Device*> *device_map);

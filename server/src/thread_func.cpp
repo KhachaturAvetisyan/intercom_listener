@@ -1,4 +1,4 @@
-# include "../includes/serv_include.hpp" 
+# include "../includes/serv_include.hpp"
 
 /*
 
@@ -15,6 +15,8 @@
 
 */
 
+
+// create hashmap
 std::unordered_map<std::string, Device*> device_map;
 
 void dev_thread(int client_socket, int thread_num)
@@ -39,9 +41,6 @@ void dev_thread(int client_socket, int thread_num)
     }
     dev.send_status(0x01);
 
-    device_map.insert({dev.imei, &dev});
-
-
     uint8_t startbyte = 0x01;
     uint8_t status;
 
@@ -59,7 +58,7 @@ void dev_thread(int client_socket, int thread_num)
             }
 
             // check NFC update 
-            if(dev.serv_updtime_NFC != dev.serv_ping_data.NFC_list_update_time)
+            if(dev.serv_updtime_NFC > dev.device_ping_data.NFC_list_update_time)
             {
                 // logs
                 std::cout << "Thread " << thread_num << " : " << "NFC list update\n";
@@ -104,7 +103,7 @@ void dev_thread(int client_socket, int thread_num)
                 // }
             }
             // check PIN update
-            if(dev.serv_updtime_PIN != dev.serv_ping_data.PIN_list_update_time)
+            if(dev.serv_updtime_PIN > dev.device_ping_data.PIN_list_update_time)
             {
                 // logs
                 std::cout << "Thread " << thread_num << " : " << "PIN list update\n";
@@ -155,17 +154,14 @@ void dev_thread(int client_socket, int thread_num)
             // Case #06 Post device event (history)
             if(!dev.read_history())
             {
-                dev.send_status(0x00);
                 perror("read history error");
                 continue;
             }
             if(dev.Post_device_event())
             {
-                dev.send_status(0x00);
                 perror("Post device event error");
                 continue;
             }
-            dev.send_status(0x01);
         }
     }
 }
@@ -260,7 +256,7 @@ void device_updt(const Rest::Request& req, Http::ResponseWriter resp)
         }
         else
             responseString = "imei in map has not exists";
-        
+
     }
     else
         responseString = "No text parameter supplied in JSON:\n" + req.body();

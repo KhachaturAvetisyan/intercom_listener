@@ -89,8 +89,8 @@ bool Device::Post_device_event()
     json req = 
     {
         {"imei", imei},
-        {"time", history_s->time},
-        {"type", history_s->type},
+        {"time", history_s->event_time},
+        {"type", history_s->event_type},
         {"value", history_s->value}
     };
 
@@ -110,8 +110,8 @@ bool Device::Post_device_updtime()
     json req = 
     {
         {"imei", imei},
-        {"updtime_NFC", serv_ping_data.NFC_list_update_time},
-        {"updtime_PIN", serv_ping_data.PIN_list_update_time}
+        {"updtime_NFC", device_ping_data.NFC_list_update_time},
+        {"updtime_PIN", device_ping_data.PIN_list_update_time}
     };
 
     std::string res = post_req(api + "", req);
@@ -197,6 +197,8 @@ bool Device::hand_shake()
 
     for (int i = 0; i < 15; ++i)
         imei += data[1 + i];
+    
+    device_map->insert({imei, this});
 
     std::cout << "device imei : " << imei << "\n";
     return true;
@@ -215,36 +217,39 @@ bool Device::read_ping()
         return false;
     }
     
-    serv_ping_data.working_mode = array[0];
-    serv_ping_data.firmware_version = ((uint16_t)array[1] << 8) | array[2];
+    device_ping_data.working_mode = array[0];
+
+    device_ping_data.firmware_version = ((uint16_t)array[1] << 8) 
+                                        | array[2];
     
-    serv_ping_data.SIM_info = array[3];
-    serv_ping_data.SIM1_connection_quality = array[4];
-    serv_ping_data.SIM2_connection_quality = array[5];
+    device_ping_data.SIM_info = array[3];
+    device_ping_data.SIM1_connection_quality = array[4];
+    device_ping_data.SIM2_connection_quality = array[5];
 
-    serv_ping_data.battery_voltage = ((uint16_t)array[6] << 8) | array[7];
+    device_ping_data.battery_voltage = ((uint16_t)array[6] << 8) | array[7];
 
-    serv_ping_data.NFC_list_update_time  = ((uint32_t)array[8]  << 24) 
-                                     | ((uint32_t)array[9] << 16)
-                                     | ((uint32_t)array[10] << 8)
-                                     | ((uint32_t)array[11]);
+    device_ping_data.NFC_list_update_time  = ((uint32_t)array[8]  << 24) 
+                                            | ((uint32_t)array[9] << 16)
+                                            | ((uint32_t)array[10] << 8)
+                                            | ((uint32_t)array[11]);
 
-    serv_ping_data.PIN_list_update_time  = ((uint32_t)array[12] << 24) 
-                                     | ((uint32_t)array[13] << 16)
-                                     | ((uint32_t)array[14] << 8)
-                                     | ((uint32_t)array[15]);
+    device_ping_data.PIN_list_update_time  = ((uint32_t)array[12] << 24) 
+                                            | ((uint32_t)array[13] << 16)
+                                            | ((uint32_t)array[14] << 8)
+                                            | ((uint32_t)array[15]);
 
-    serv_ping_data.checksum = ((uint16_t)array[16] << 8) | array[17];
+    device_ping_data.checksum = ((uint16_t)array[16] << 8) 
+                                | array[17];
 
-    // std::cout << (int)serv_ping_data.working_mode << "\n";
-    // std::cout << (int)serv_ping_data.firmware_version << "\n";
-    // std::cout << (int)serv_ping_data.SIM_info << "\n";
-    // std::cout << (int)serv_ping_data.SIM1_connection_quality << "\n";
-    // std::cout << (int)serv_ping_data.SIM2_connection_quality << "\n";
-    // std::cout << (int)serv_ping_data.battery_voltage << "\n";
-    // std::cout << serv_ping_data.NFC_list_update_time << "\n";
-    // std::cout << serv_ping_data.PIN_list_update_time << "\n";
-    // std::cout << serv_ping_data.checksum << "\n";
+    // std::cout << (int)device_ping_data.working_mode << "\n";
+    // std::cout << (int)device_ping_data.firmware_version << "\n";
+    // std::cout << (int)device_ping_data.SIM_info << "\n";
+    // std::cout << (int)device_ping_data.SIM1_connection_quality << "\n";
+    // std::cout << (int)device_ping_data.SIM2_connection_quality << "\n";
+    // std::cout << (int)device_ping_data.battery_voltage << "\n";
+    // std::cout << device_ping_data.NFC_list_update_time << "\n";
+    // std::cout << device_ping_data.PIN_list_update_time << "\n";
+    // std::cout << device_ping_data.checksum << "\n";
 
     send_status(0X01);
     return true;
@@ -252,12 +257,37 @@ bool Device::read_ping()
 
 bool Device::read_history()
 {
-    history_s = (history_struct*)malloc(sizeof(history_struct));
+    //logs
+    std::cout << "Thread " << thread_num << " : " << "history\n";
 
-    if(!read_data(history_s, sizeof(history_struct)))
+    uint8_t array[15];
+
+    if(!read_data(array, 15))
+    {
+        send_status(0x00);
         return false;
+    }
 
-    // free(history_s);
+    device_history_data.event_time = ((uint32_t)array[0]  << 24) 
+                                    | ((uint32_t)array[1] << 16)
+                                    | ((uint32_t)array[2] << 8)
+                                    | ((uint32_t)array[3]);
+
+    device_history_data.event_type = array[4];
+
+    device_history_data.value = ((uint64_t)array[5] << 56)
+                                | ((uint64_t)array[6] << 48)
+                                | ((uint64_t)array[7] << 40)
+                                | ((uint64_t)array[8] << 32)
+                                | ((uint64_t)array[9] << 24)
+                                | ((uint64_t)array[10] << 16)
+                                | ((uint64_t)array[11] << 8)
+                                | ((uint64_t)array[12]);
+
+    device_history_data.checksum = ((uint16_t)array[13] << 8) 
+                                | array[14];
+
+    send_status(0x01);
     return true;
 }
 
