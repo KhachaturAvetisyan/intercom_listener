@@ -36,12 +36,12 @@ Byte 1 - Status
     0x00 when error
 ```
 
-**Response Timeout:** 30s
+**Response timeout:** 30s
 
 
 ### 1.2. Ping
 
-**Request:** 19 Bytes
+**Request:** 23 Bytes
 ```
 Byte 1 - Startbyte
     Fixed value 0xA1
@@ -69,7 +69,10 @@ Bytes 10:13 - NFC list update time
 Bytes 14:17 - PIN list update time
     PIN list update time (UNIX time)
 
-Bytes 18:19 - Checksum
+Bytes 18:21 - One-time PIN list update time
+    One-time PIN list update time (UNIX time)
+
+Bytes 22:23 - Checksum
     2 bytes sum of 17 previous bytes
 ```
 
@@ -79,7 +82,7 @@ Byte 1 - Status
     Fixed value 0x01 (OK status)
 ```
 
-**Response Timeout:** 30s
+**Response timeout:** 30s
 
 
 ### 1.3. Event (history)
@@ -95,9 +98,10 @@ Bytes 2:5 - Event time
 Byte 6 - Event type
     0x00 for NFC code
     0x01 for PIN code
+    0x02 for One-time PIN code
 
 Bytes 7:14 - Value
-    NFC of PIN code
+    NFC, PIN or One-time PIN code
 
 Bytes 15:16 - Checksum
     2 bytes sum of 14 previous bytes
@@ -110,7 +114,7 @@ Byte 1 - Status
     0x00 when error
 ```
 
-**Response Timeout:** 30s
+**Response timeout:** 30s
 
 
 ---
@@ -126,6 +130,7 @@ Byte 1 - Startbyte
 Byte 2 - Data type
     0x00 for NFC code
     0x01 for PIN code
+    0x02 for One-time PIN code
 
 Bytes 3:6 - Data time
     Data time (UNIX time)
@@ -144,7 +149,7 @@ Byte 1 - Status
     0x00 when error
 ```
 
-**Response Timeout:** 30s
+**Response timeout:** 30s
 
 
 ### 2.2. Data packet
@@ -168,7 +173,7 @@ Byte 1 - Status
     0x00 when error
 ```
 
-**Response Timeout:** 30s
+**Response timeout:** 30s
 
 
 ---
@@ -199,6 +204,7 @@ uint8_t  SIM2_connection_quality;
 uint16_t battery_voltage;
 uint32_t NFC_list_update_time;
 uint32_t PIN_list_update_time;
+uint32_t one_time_PIN_list_update_time;
 uint16_t checksum;
 } ping_data_typedef;
 
@@ -245,8 +251,13 @@ void PingDataStructToArray(ping_data_typedef *ping_data, uint8_t *array)
     array[15] = ping_data->PIN_list_update_time >>  8;
     array[16] = ping_data->PIN_list_update_time;
 
-    array[17] = ping_data->checksum >> 8;
-    array[18] = ping_data->checksum;
+    array[17] = ping_data->one_time_PIN_list_update_time >> 24;
+    array[18] = ping_data->one_time_PIN_list_update_time >> 16;
+    array[19] = ping_data->one_time_PIN_list_update_time >>  8;
+    array[20] = ping_data->one_time_PIN_list_update_time;
+
+    array[21] = ping_data->checksum >> 8;
+    array[22] = ping_data->checksum;
 }
 
 
@@ -261,9 +272,10 @@ int SendPingData(int socket, ping_data_typedef *ping_data)
     ping_data->battery_voltage = 1206;
     ping_data->NFC_list_update_time = 0xFA122112;
     ping_data->PIN_list_update_time = 0xFA122112;
-    ping_data->checksum = GetChecksum((uint8_t *)ping_data, 17);
+    ping_data->one_time_PIN_list_update_time = 0xFA122112;
+    ping_data->checksum = GetChecksum((uint8_t *)ping_data, 21);
 
-    return send(socket, (char *)ping_data, 19, NULL);
+    return send(socket, (char *)ping_data, 23, NULL);
 }
 ```
 
@@ -281,6 +293,7 @@ uint8_t  SIM2_connection_quality;
 uint16_t battery_voltage;
 uint32_t NFC_list_update_time;
 uint32_t PIN_list_update_time;
+uint32_t one_time_PIN_list_update_time;
 uint16_t checksum;
 } ping_data_typedef;
 
@@ -324,16 +337,22 @@ void ArrayToPingDataStruct(uint8_t *array, ping_data_typedef *ping_data)
                                      | ((uint32_t)array[15] << 8)
                                      | ((uint32_t)array[16]);
 
-    ping_data->checksum = ((uint16_t)array[17] << 8) | array[18];
+    ping_data->one_time_PIN_list_update_time  = ((uint32_t)array[17] << 24) 
+                                              | ((uint32_t)array[18] << 16)
+                                              | ((uint32_t)array[19] << 8)
+                                              | ((uint32_t)array[20]);
+
+    ping_data->checksum = ((uint16_t)array[21] << 8) | array[22];
 }
 
 
 int ReadPingData(int socket, ping_data_typedef *ping_data)
 {
-    read(socket, (char *)ping_data, 19);
+    char arr[23];
+    read(socket, arr, 23);
+    ArrayToPingDataStruct(arr, ping_data);
 
-    uint16_t temp_checksum = GetChecksum((uint8_t *)ping_data, 17);
-
+    uint16_t temp_checksum = GetChecksum((uint8_t *)arr, 21);
     return ping_data->checksum == temp_checksum;
 }
 ```
