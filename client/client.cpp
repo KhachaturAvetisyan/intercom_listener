@@ -6,11 +6,11 @@ uint16_t checksum(uint8_t *array, uint16_t array_length)
     if (array_length < 2) return array[0];
 
     uint16_t retval = 0;
-    uint16_t *arr_ptr = (uint16_t *)array;
+    // uint16_t *arr_ptr = (uint16_t *)array;
 
-    for (int i = 0; i < array_length / 2; ++i)
+    for (int i = 0; i < array_length; ++i)
     {
-        retval += array[i];
+        retval += (uint16_t)array[i];
     }
 
     std::cout << "checksum is : " << retval << "\n";

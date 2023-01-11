@@ -27,7 +27,7 @@ private:
     bool send_data(T data, size_t size);
 
     //checksum
-    uint16_t checksum(uint8_t *array, uint16_t array_length);
+    uint16_t checksum(uint8_t *array, uint16_t array_length, uint8_t startbyte);
 
 public:
     std::string imei;

@@ -252,7 +252,7 @@ bool Device::read_ping()
     device_ping_data.checksum = ((uint16_t)array[16] << 8) 
                                 | array[17];
 
-    if(device_ping_data.checksum != checksum(array, 17))
+    if(device_ping_data.checksum != checksum(array, 16, device_ping_data.startbyte))
     {
         perror("checksom error");
         send_status(0x00);
@@ -306,7 +306,7 @@ bool Device::read_history()
                                 | array[14];
 
 
-    if(device_history_data.checksum != checksum(array, 14))
+    if(device_history_data.checksum != checksum(array, 13, device_history_data.startbyte))
     {
         perror("checksom error");
         send_status(0x00);
@@ -461,17 +461,18 @@ bool Device::Request_for_update(uint8_t req_code)
     return (true);
 }
 
-uint16_t Device::checksum(uint8_t *array, uint16_t array_length)
+uint16_t Device::checksum(uint8_t *array, uint16_t array_length, uint8_t startbyte)
 {
     if (array_length < 0) return 0;
     if (array_length < 2) return array[0];
 
     uint16_t retval = 0;
-    uint16_t *arr_ptr = (uint16_t *)array;
+    retval += (uint16_t)startbyte;
+    // uint16_t *arr_ptr = (uint16_t *)array;
 
-    for (int i = 0; i < array_length / 2; ++i)
+    for (int i = 0; i < array_length; ++i)
     {
-        retval += array[i];
+        retval += (uint16_t)array[i];
     }
 
     std::cout << "checksum is : " << retval << "\n";
