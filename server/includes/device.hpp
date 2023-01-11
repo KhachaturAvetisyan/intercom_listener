@@ -17,6 +17,7 @@ private:
     json PIN_list;
 
     long long *nfcs;
+
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
     std::string post_req(std::string url, json post);
     json get_req(std::string url);
@@ -33,7 +34,9 @@ public:
     std::string imei;
     uint32_t serv_updtime_NFC = 0;
     uint32_t serv_updtime_PIN = 0;
+
     uint8_t paket_count;
+    std::vector<uint8_t*> data_list;
 
     ping_struct device_ping_data;
     history_struct device_history_data;

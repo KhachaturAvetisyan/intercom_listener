@@ -64,43 +64,43 @@ void dev_thread(int client_socket, int thread_num)
                 std::cout << "Thread " << thread_num << " : " << "NFC list update\n";
 
                 // Case #03 Time competition for NFC is false
-                // if(!dev.Get_NFC_list())
-                // {
-                //     perror("Get_NFC_list error");
-                //     continue;
-                // }
-                // if(!dev.separate_data_by_pakets())
-                // {
-                //     perror("separate_data_by_pakets error");
-                //     continue;
-                // }
-                // if(!dev.Request_for_update(0X00))
-                // {
-                //     perror("Request_for_update error");
-                //     continue;
-                // }
-                // status = dev.read_byte();
-                // if(status == 0x00)
-                // {
-                //     std::cout << "Do not Update!" << std::endl;
-                //     continue;
-                // }
-                // else if(status == 0x01)
-                // {
-                //     for(int i = 0; i < dev.paket_count; ++i)
-                //     {
-                //         for(int j = 0; j < 3; ++j)
-                //         {
-                //             // if(dev.Data_Body())
-                //             //     break;
-                //         }
-                //     }
-                //     if(!dev.Post_device_updtime())
-                //     {
-                //         perror("Post device updtime error");
-                //         continue;
-                //     }
-                // }
+                if(!dev.Get_NFC_list())
+                {
+                    perror("Get_NFC_list error");
+                    continue;
+                }
+                if(!dev.Request_for_update(0x00))
+                {
+                    perror("Request_for_update error");
+                    continue;
+                }
+                status = dev.read_byte();
+                if(status == 0x00)
+                {
+                    std::cout << "Do not Update!" << std::endl;
+                    continue;
+                }
+                if(!dev.separate_data_by_pakets())
+                {
+                    perror("separate_data_by_pakets error");
+                    continue;
+                }
+                else if(status == 0x01)
+                {
+                    for(int i = 0; i < dev.paket_count; ++i)
+                    {
+                        for(int j = 0; j < 3; ++j)
+                        {
+                            // if(dev.Data_Body())
+                            //     break;
+                        }
+                    }
+                    if(!dev.Post_device_updtime())
+                    {
+                        perror("Post device updtime error");
+                        continue;
+                    }
+                }
             }
             // check PIN update
             if(dev.serv_updtime_PIN > dev.device_ping_data.PIN_list_update_time)

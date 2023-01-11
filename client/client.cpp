@@ -13,7 +13,7 @@ uint16_t checksum(uint8_t *array, uint16_t array_length)
         retval += (uint16_t)array[i];
     }
 
-    std::cout << "checksum is : " << retval << "\n";
+    // std::cout << "checksum is : " << retval << "\n";
 
     return retval;
 }

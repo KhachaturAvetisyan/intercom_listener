@@ -39,10 +39,11 @@ json devices =
 void device_status(const Rest::Request& req, Http::ResponseWriter resp) 
 {
     std::string restext;
+    std::string imei = "0";
 
     if(req.hasParam(":imei"))
     {
-        std::string imei = req.param(":imei").as<std::string>();
+        imei = req.param(":imei").as<std::string>();
 
         if(devices.contains(imei))
         {
@@ -58,7 +59,7 @@ void device_status(const Rest::Request& req, Http::ResponseWriter resp)
     else
         restext = "No parameter supplied.";
 
-    std::cout << restext << "\n";
+    std::cout << "imei : " << imei << "\n" << restext << "\n";
     resp.send(Http::Code::Ok, restext);
 }
 

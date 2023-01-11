@@ -32,8 +32,8 @@ typedef struct
   uint8_t  startbyte; //  0XB1
   uint8_t  datatype;  //  NFC[0X00] | PIN[0X01]
   uint32_t data_time; //  1672040924
-  uint64_t data_count;//  15
-  uint16_t checksum;  //  sizeof(struct X) - sizeof(uint16_t) | 
+  uint16_t data_count;//  15
+  uint16_t checksum; 
 }upd_request; 
 
 #endif // STRUCTS_HEADER

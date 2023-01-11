@@ -259,15 +259,15 @@ bool Device::read_ping()
         return false;
     }
 
-    std::cout << (int)device_ping_data.working_mode << "\n";
-    std::cout << (int)device_ping_data.firmware_version << "\n";
-    std::cout << (int)device_ping_data.SIM_info << "\n";
-    std::cout << (int)device_ping_data.SIM1_connection_quality << "\n";
-    std::cout << (int)device_ping_data.SIM2_connection_quality << "\n";
-    std::cout << (int)device_ping_data.battery_voltage << "\n";
-    std::cout << device_ping_data.NFC_list_update_time << "\n";
-    std::cout << device_ping_data.PIN_list_update_time << "\n";
-    std::cout << device_ping_data.checksum << "\n";
+    // std::cout << (int)device_ping_data.working_mode << "\n";
+    // std::cout << (int)device_ping_data.firmware_version << "\n";
+    // std::cout << (int)device_ping_data.SIM_info << "\n";
+    // std::cout << (int)device_ping_data.SIM1_connection_quality << "\n";
+    // std::cout << (int)device_ping_data.SIM2_connection_quality << "\n";
+    // std::cout << (int)device_ping_data.battery_voltage << "\n";
+    // std::cout << device_ping_data.NFC_list_update_time << "\n";
+    // std::cout << device_ping_data.PIN_list_update_time << "\n";
+    // std::cout << device_ping_data.checksum << "\n";
 
     send_status(0X01);
     return true;
@@ -313,10 +313,10 @@ bool Device::read_history()
         return false;
     }
 
-    std::cout << device_history_data.event_time << "\n";
-    std::cout << (int)device_history_data.event_type << "\n";
-    std::cout << device_history_data.value << "\n";
-    std::cout << device_history_data.checksum << "\n";
+    // std::cout << device_history_data.event_time << "\n";
+    // std::cout << (int)device_history_data.event_type << "\n";
+    // std::cout << device_history_data.value << "\n";
+    // std::cout << device_history_data.checksum << "\n";
 
     send_status(0x01);
     return true;
@@ -416,49 +416,95 @@ json Device::get_req(std::string url)
 
 bool Device::separate_data_by_pakets()
 {
-    if(NFC_list.size() > 0)
-    {
-        int size = NFC_list.size();
-        nfcs = (long long *)malloc(sizeof(long long*) * size);
-        std::string nfc;
-        int i = -1;
-        while(++i < size)
-            nfcs[i] = NFC_list[i].get<long long>();
+    // if(NFC_list.size() > 0)
+    // {
+    //     int size = NFC_list.size();
+    //     nfcs = (long long *)malloc(sizeof(long long*) * size);
+    //     std::string nfc;
+    //     int i = -1;
+    //     while(++i < size)
+    //         nfcs[i] = NFC_list[i].get<long long>();
         
-        return (true);
-    }
-    return (false);
+    //     return (true);
+    // }
+    // return (false);
+
+    
 }
 
 bool Device::Request_for_update(uint8_t req_code)
 {
-    uint8_t packets;
-    upd_request upd;
+    // uint8_t packets;
+    // upd_request upd;
 
-    if(!nfcs[0])
-        return (false);
-    if(req_code == 0X00)
+    // if(!nfcs[0])
+    //     return (false);
+    // if(req_code == 0X00)
+    // {
+    //     upd.startbyte  = 0XB1;
+    //     upd.datatype   = req_code;
+    //     upd.data_time  = time(NULL);
+    //     upd.data_count = 14;
+    //     // upd.checksum = checksum(upd);
+    //     if(!send_data(upd, sizeof(upd_request)))
+    //     {
+    //         perror("request for update was dumped");
+    //         return (false);
+    //     }
+    // }
+    // else if(req_code == 0x01)
+    // {
+    //     //request for update PIN list
+    //     std::cout << "Update PIN List" << std::endl;
+    // }
+    // else
+    //     return (false);
+        
+    // return (true);
+
+    upd_request request;
+
+    request.startbyte = 0xB1;
+
+    if(req_code == 0x00)
     {
-        upd.startbyte  = 0XB1;
-        upd.datatype   = req_code;
-        upd.data_time  = time(NULL);
-        upd.data_count = 14;
-        // upd.checksum = checksum(upd);
-        if(!send_data(upd, sizeof(upd_request)))
-        {
-            perror("request for update was dumped");
-            return (false);
-        }
+        request.datatype = 0x00;
+        request.data_time = serv_updtime_NFC;
+        request.data_count = NFC_list.size();
     }
     else if(req_code == 0x01)
     {
-        //request for update PIN list
-        std::cout << "Update PIN List" << std::endl;
+        request.datatype = 0x01;
+        request.data_time = serv_updtime_PIN;
+        request.data_count = PIN_list.size();
     }
-    else
-        return (false);
-        
-    return (true);
+
+    uint8_t array[10];
+
+    array[0] = request.startbyte;
+
+    array[1] = request.datatype;
+
+    array[2] = request.data_time >> 24;
+    array[3] = request.data_time >> 16;
+    array[4] = request.data_time >> 8;
+    array[5] = request.data_time;
+
+    array[6] = request.data_count >> 8;
+    array[7] = request.data_count;
+
+    request.checksum = checksum(array, 8, 0);
+
+    array[8] = request.checksum >> 8;
+    array[9] = request.checksum;
+
+    if(send_data(array, 10))
+    {
+        perror("send upd data error");
+        return false;
+    }
+
+    return true;
 }
 
 uint16_t Device::checksum(uint8_t *array, uint16_t array_length, uint8_t startbyte)
@@ -475,7 +521,7 @@ uint16_t Device::checksum(uint8_t *array, uint16_t array_length, uint8_t startby
         retval += (uint16_t)array[i];
     }
 
-    std::cout << "checksum is : " << retval << "\n";
+    // std::cout << "checksum is : " << retval << "\n";
 
     return retval;
 }
