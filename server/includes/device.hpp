@@ -13,7 +13,6 @@ private:
     int thread_num;
     std::unordered_map<std::string, Device*> *device_map;
 
-    history_struct* history_s;
     json NFC_list;
     json PIN_list;
 
@@ -28,7 +27,7 @@ private:
     bool send_data(T data, size_t size);
 
     //checksum
-    uint16_t checksum(upd_request upd);
+    uint16_t checksum(uint8_t *array, uint16_t array_length);
 
 public:
     std::string imei;

@@ -1,5 +1,23 @@
 # include "client_include.hpp"
 
+uint16_t checksum(uint8_t *array, uint16_t array_length)
+{
+    if (array_length < 0) return 0;
+    if (array_length < 2) return array[0];
+
+    uint16_t retval = 0;
+    uint16_t *arr_ptr = (uint16_t *)array;
+
+    for (int i = 0; i < array_length / 2; ++i)
+    {
+        retval += array[i];
+    }
+
+    std::cout << "checksum is : " << retval << "\n";
+
+    return retval;
+}
+
 bool status_check(int sock)
 {
     struct pollfd mypoll = { sock, POLLIN|POLLPRI };
@@ -50,6 +68,8 @@ bool send_ping(ping_struct& ping, int sock)
     array[14] = ping.PIN_list_update_time >> 16;
     array[15] = ping.PIN_list_update_time >>  8;
     array[16] = ping.PIN_list_update_time;
+
+    ping.checksum = checksum(array, 17);
 
     array[17] = ping.checksum >> 8;
     array[18] = ping.checksum;
@@ -106,6 +126,8 @@ bool send_history(history_struct history, int sock)
     array[11] = history.value >> 16;
     array[12] = history.value >> 8;
     array[13] = history.value;
+
+    history.checksum = checksum(array, 14);
 
     array[14] = history.checksum >> 8;
     array[15] = history.checksum;
@@ -179,7 +201,7 @@ int main()
     ping.battery_voltage = 1206;
     ping.NFC_list_update_time = 0xFA122112;
     ping.PIN_list_update_time = 0xFA122112;
-    ping.checksum = 13256;
+
 
     // history init
     history_struct history;
@@ -187,7 +209,7 @@ int main()
     history.startbyte = 0xA2;
     history.event_time = 0xFA122135;
     history.event_type = 0x00; // NFC
-
+    history.value = 7677389;
 
 
     while(1)
@@ -223,6 +245,7 @@ int main()
             exit(EXIT_FAILURE);
         }
         std::cout << "history status is OK\n";
+
 
     }
 

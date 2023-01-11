@@ -2,7 +2,10 @@
 
 // class constructor
 Device::Device(int dev_sock, int thr_num,  std::unordered_map<std::string, Device*> *dev_map) : device_socket(dev_sock), thread_num(thr_num), device_map(dev_map)
-{}
+{
+    device_ping_data.startbyte = 0xA1;
+    device_history_data.startbyte = 0xA2;
+}
 // class destructor
 Device::~Device()
 {
@@ -52,6 +55,7 @@ bool Device::Get_device_status()
 bool Device::Get_NFC_list()
 {
     json res = get_req(api + "NFC_list/" + imei);
+
     // logs
     std::cout << "Thread " << thread_num << " : " <<  "Get NFC list reaquests\n";
     // std::cout << std::setw(4) << res << std::endl;
@@ -86,15 +90,22 @@ bool Device::Get_PIN_list()
 
 bool Device::Post_device_event()
 {
+    //logs
+    std::cout << "Thread " << thread_num << " : " << "Post device event request\n";
+
     json req = 
     {
         {"imei", imei},
-        {"time", history_s->event_time},
-        {"type", history_s->event_type},
-        {"value", history_s->value}
+        {"time", device_history_data.event_time},
+        {"type", device_history_data.event_type},
+        {"value", device_history_data.value}
     };
 
-    std::string res = post_req(api + "", req);
+    std::string url = api + "/device_event";
+    // std::cout << url << "\n";
+
+    std::string res = post_req(url, req);
+    // std::cout << res << "\n";
 
     if (res != "OK")
     {
@@ -241,15 +252,22 @@ bool Device::read_ping()
     device_ping_data.checksum = ((uint16_t)array[16] << 8) 
                                 | array[17];
 
-    // std::cout << (int)device_ping_data.working_mode << "\n";
-    // std::cout << (int)device_ping_data.firmware_version << "\n";
-    // std::cout << (int)device_ping_data.SIM_info << "\n";
-    // std::cout << (int)device_ping_data.SIM1_connection_quality << "\n";
-    // std::cout << (int)device_ping_data.SIM2_connection_quality << "\n";
-    // std::cout << (int)device_ping_data.battery_voltage << "\n";
-    // std::cout << device_ping_data.NFC_list_update_time << "\n";
-    // std::cout << device_ping_data.PIN_list_update_time << "\n";
-    // std::cout << device_ping_data.checksum << "\n";
+    if(device_ping_data.checksum != checksum(array, 17))
+    {
+        perror("checksom error");
+        send_status(0x00);
+        return false;
+    }
+
+    std::cout << (int)device_ping_data.working_mode << "\n";
+    std::cout << (int)device_ping_data.firmware_version << "\n";
+    std::cout << (int)device_ping_data.SIM_info << "\n";
+    std::cout << (int)device_ping_data.SIM1_connection_quality << "\n";
+    std::cout << (int)device_ping_data.SIM2_connection_quality << "\n";
+    std::cout << (int)device_ping_data.battery_voltage << "\n";
+    std::cout << device_ping_data.NFC_list_update_time << "\n";
+    std::cout << device_ping_data.PIN_list_update_time << "\n";
+    std::cout << device_ping_data.checksum << "\n";
 
     send_status(0X01);
     return true;
@@ -286,6 +304,19 @@ bool Device::read_history()
 
     device_history_data.checksum = ((uint16_t)array[13] << 8) 
                                 | array[14];
+
+
+    if(device_history_data.checksum != checksum(array, 14))
+    {
+        perror("checksom error");
+        send_status(0x00);
+        return false;
+    }
+
+    std::cout << device_history_data.event_time << "\n";
+    std::cout << (int)device_history_data.event_type << "\n";
+    std::cout << device_history_data.value << "\n";
+    std::cout << device_history_data.checksum << "\n";
 
     send_status(0x01);
     return true;
@@ -412,7 +443,7 @@ bool Device::Request_for_update(uint8_t req_code)
         upd.datatype   = req_code;
         upd.data_time  = time(NULL);
         upd.data_count = 14;
-        upd.checksum = checksum(upd);
+        // upd.checksum = checksum(upd);
         if(!send_data(upd, sizeof(upd_request)))
         {
             perror("request for update was dumped");
@@ -430,13 +461,20 @@ bool Device::Request_for_update(uint8_t req_code)
     return (true);
 }
 
-uint16_t Device::checksum(upd_request upd)
+uint16_t Device::checksum(uint8_t *array, uint16_t array_length)
 {
-    uint16_t sum;
+    if (array_length < 0) return 0;
+    if (array_length < 2) return array[0];
 
-    sum = upd.startbyte  + \
-          upd.datatype   + \
-          upd.data_time  + \
-          upd.data_count;
-    return (sum);
+    uint16_t retval = 0;
+    uint16_t *arr_ptr = (uint16_t *)array;
+
+    for (int i = 0; i < array_length / 2; ++i)
+    {
+        retval += array[i];
+    }
+
+    std::cout << "checksum is : " << retval << "\n";
+
+    return retval;
 }

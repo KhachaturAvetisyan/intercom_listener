@@ -47,7 +47,7 @@ void dev_thread(int client_socket, int thread_num)
     while(startbyte != 0x00)
     {
         startbyte = dev.read_byte();
-        if(startbyte == 0xA1)
+        if(startbyte == dev.device_ping_data.startbyte)
         {
             // Case #02 Ping from device
 
@@ -91,8 +91,8 @@ void dev_thread(int client_socket, int thread_num)
                 //     {
                 //         for(int j = 0; j < 3; ++j)
                 //         {
-                //             if(dev.Data_Body())
-                //                 break;
+                //             // if(dev.Data_Body())
+                //             //     break;
                 //         }
                 //     }
                 //     if(!dev.Post_device_updtime())
@@ -149,7 +149,7 @@ void dev_thread(int client_socket, int thread_num)
 
             }
         }
-        else if(startbyte == 0xA2)
+        else if(startbyte == dev.device_history_data.startbyte)
         {
             // Case #06 Post device event (history)
             if(!dev.read_history())
