@@ -40,7 +40,7 @@ bool status_check(int sock)
     return status == 0x01 ? true : false;
 }
 
-bool send_ping(ping_struct& ping, int sock)
+bool send_ping(ping_struct& ping, int sock) 
 {
     std::cout << "send ping\n";
 

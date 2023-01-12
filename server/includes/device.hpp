@@ -14,7 +14,6 @@ private:
     std::unordered_map<std::string, Device*> *device_map;
 
     std::string imei;
-    std::vector<uint8_t*> data_list;
 
     json NFC_list;
     json PIN_list;
@@ -38,6 +37,7 @@ public:
     uint32_t serv_updtime_PIN = 0;
 
     uint8_t packet_count;
+    std::vector<uint8_t*> data_list;
 
     ping_struct device_ping_data;
     history_struct device_history_data;
@@ -65,7 +65,7 @@ public:
     // listener to device requests
     bool Request_for_update(uint8_t req_code);
     bool separate_data_by_pakets(uint8_t req_code);
-    bool Data_Body();
+    bool Data_Body(uint8_t* body);
 
     //utils
     // uint8_t calc_packets(long long *nfcs);

@@ -91,8 +91,8 @@ void dev_thread(int client_socket, int thread_num)
                     {
                         for(int j = 0; j < 3; ++j)
                         {
-                            // if(dev.Data_Body())
-                            //     break;
+                            if(dev.Data_Body(dev.data_list[i]))
+                                break;
                         }
                     }
                     if(!dev.Post_device_updtime())
@@ -136,8 +136,8 @@ void dev_thread(int client_socket, int thread_num)
                     {
                         for(int j = 0; j < 3; ++j)
                         {
-                            // if(dev.Data_Body())
-                            //     break;
+                            if(dev.Data_Body(dev.data_list[i]))
+                                break;
                         }
                     }
                     if(!dev.Post_device_updtime())

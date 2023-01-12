@@ -34,6 +34,13 @@ typedef struct
   uint32_t data_time; //  1672040924
   uint16_t data_count;//  15
   uint16_t checksum; 
-}upd_request; 
+}upd_request;
+
+typedef struct
+{
+  uint8_t startbyte;
+  uint8_t data[128];
+  uint16_t checksum;
+}data_packet_struct;
 
 #endif // STRUCTS_HEADER

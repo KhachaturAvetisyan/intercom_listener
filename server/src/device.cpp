@@ -535,7 +535,7 @@ bool Device::separate_data_by_pakets(uint8_t req_code)
             uint8_t array[128];
 
             int j = 0;
-            while(list_size > 0 or j < 16)
+            while(list_size > 0 && j < 16)
             {
                 array[j * 8 + 0] = NFC_list[i * 16 + j] >> 56;
                 array[j * 8 + 1] = NFC_list[i * 16 + j] >> 48;
@@ -547,6 +547,7 @@ bool Device::separate_data_by_pakets(uint8_t req_code)
                 array[j * 8 + 7] = NFC_list[i * 16 + j];
 
                 ++j;
+                --list_size;
             }
 
             data_list.push_back(array);
@@ -564,7 +565,7 @@ bool Device::separate_data_by_pakets(uint8_t req_code)
             uint8_t array[128];
 
             int j = 0;
-            while(list_size > 0 or j < 16)
+            while(list_size > 0 && j < 16)
             {
                 array[j * 8 + 0] = PIN_list[i * 16 + j] >> 56;
                 array[j * 8 + 1] = PIN_list[i * 16 + j] >> 48;
@@ -575,6 +576,7 @@ bool Device::separate_data_by_pakets(uint8_t req_code)
                 array[j * 8 + 6] = PIN_list[i * 16 + j] >> 8;
                 array[j * 8 + 7] = PIN_list[i * 16 + j];
 
+                --list_size;
                 ++j;
             }
 
@@ -586,4 +588,31 @@ bool Device::separate_data_by_pakets(uint8_t req_code)
         std::cout << "separate_data_by_pakets error : unknown req_code!\n";
         return false;
     }
+}
+
+bool Device::Data_Body(uint8_t* body)
+{
+    // data_packet_struct data_packet;
+    
+    // data_packet.startbyte = 0xB2;
+    // data_packet.data = body;
+    // data_packet.checksum;
+
+    uint8_t array[131];
+    uint16_t sum;
+
+    array[0] = 0xB2;
+    int i = 0;
+    while(++i < 128)
+        array[i] = body[i - 1];
+
+        sum = checksum(array, 129, 0);
+    array[129] = sum >> 8;
+    array[130] = sum;
+    if(!send_data(array, 131))
+    {
+        perror("Packet Not Sended");
+        return (false);
+    }
+    return (true);
 }
