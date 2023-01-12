@@ -322,6 +322,25 @@ bool Device::read_history()
     return true;
 }
 
+uint16_t Device::checksum(uint8_t *array, uint16_t array_length, uint8_t startbyte)
+{
+    if (array_length < 0) return 0;
+    if (array_length < 2) return array[0];
+
+    uint16_t retval = 0;
+    retval += (uint16_t)startbyte;
+    // uint16_t *arr_ptr = (uint16_t *)array;
+
+    for (int i = 0; i < array_length; ++i)
+    {
+        retval += (uint16_t)array[i];
+    }
+
+    // std::cout << "checksum is : " << retval << "\n";
+
+    return retval;
+}
+
 
 // curl post & get request
 size_t Device::WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -414,24 +433,6 @@ json Device::get_req(std::string url)
 
 
 
-bool Device::separate_data_by_pakets()
-{
-    // if(NFC_list.size() > 0)
-    // {
-    //     int size = NFC_list.size();
-    //     nfcs = (long long *)malloc(sizeof(long long*) * size);
-    //     std::string nfc;
-    //     int i = -1;
-    //     while(++i < size)
-    //         nfcs[i] = NFC_list[i].get<long long>();
-        
-    //     return (true);
-    // }
-    // return (false);
-
-    
-}
-
 bool Device::Request_for_update(uint8_t req_code)
 {
     // uint8_t packets;
@@ -507,21 +508,82 @@ bool Device::Request_for_update(uint8_t req_code)
     return true;
 }
 
-uint16_t Device::checksum(uint8_t *array, uint16_t array_length, uint8_t startbyte)
+bool Device::separate_data_by_pakets(uint8_t req_code)
 {
-    if (array_length < 0) return 0;
-    if (array_length < 2) return array[0];
+    // if(NFC_list.size() > 0)
+    // {
+    //     int size = NFC_list.size();
+    //     nfcs = (long long *)malloc(sizeof(long long*) * size);
+    //     std::string nfc;
+    //     int i = -1;
+    //     while(++i < size)
+    //         nfcs[i] = NFC_list[i].get<long long>();
+        
+    //     return (true);
+    // }
+    // return (false);
 
-    uint16_t retval = 0;
-    retval += (uint16_t)startbyte;
-    // uint16_t *arr_ptr = (uint16_t *)array;
-
-    for (int i = 0; i < array_length; ++i)
+    if(req_code == 0x00)
     {
-        retval += (uint16_t)array[i];
+        // NFC_list
+        uint16_t list_size = NFC_list.size();
+
+        packet_count = (list_size + 16 - 1) / 16;
+
+        for (int i = 0; i < packet_count; ++i)
+        {
+            uint8_t array[128];
+
+            int j = 0;
+            while(list_size > 0 or j < 16)
+            {
+                array[j * 8 + 0] = NFC_list[i * 16 + j] >> 56;
+                array[j * 8 + 1] = NFC_list[i * 16 + j] >> 48;
+                array[j * 8 + 2] = NFC_list[i * 16 + j] >> 40;
+                array[j * 8 + 3] = NFC_list[i * 16 + j] >> 32;
+                array[j * 8 + 4] = NFC_list[i * 16 + j] >> 24;
+                array[j * 8 + 5] = NFC_list[i * 16 + j] >> 16;
+                array[j * 8 + 6] = NFC_list[i * 16 + j] >> 8;
+                array[j * 8 + 7] = NFC_list[i * 16 + j];
+
+                ++j;
+            }
+
+            data_list.push_back(array);
+        }
     }
+    else if (req_code == 0x01)
+    {
+        // PIN_list
+        uint16_t list_size = PIN_list.size();
 
-    // std::cout << "checksum is : " << retval << "\n";
+        packet_count = (list_size + 16 - 1) / 16;
 
-    return retval;
+        for (int i = 0; i < packet_count; ++i)
+        {
+            uint8_t array[128];
+
+            int j = 0;
+            while(list_size > 0 or j < 16)
+            {
+                array[j * 8 + 0] = PIN_list[i * 16 + j] >> 56;
+                array[j * 8 + 1] = PIN_list[i * 16 + j] >> 48;
+                array[j * 8 + 2] = PIN_list[i * 16 + j] >> 40;
+                array[j * 8 + 3] = PIN_list[i * 16 + j] >> 32;
+                array[j * 8 + 4] = PIN_list[i * 16 + j] >> 24;
+                array[j * 8 + 5] = PIN_list[i * 16 + j] >> 16;
+                array[j * 8 + 6] = PIN_list[i * 16 + j] >> 8;
+                array[j * 8 + 7] = PIN_list[i * 16 + j];
+
+                ++j;
+            }
+
+            data_list.push_back(array);
+        }
+    }
+    else
+    {
+        std::cout << "separate_data_by_pakets error : unknown req_code!\n";
+        return false;
+    }
 }

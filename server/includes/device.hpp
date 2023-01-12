@@ -13,10 +13,13 @@ private:
     int thread_num;
     std::unordered_map<std::string, Device*> *device_map;
 
+    std::string imei;
+    std::vector<uint8_t*> data_list;
+
     json NFC_list;
     json PIN_list;
 
-    long long *nfcs;
+    // long long *nfcs;
 
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
     std::string post_req(std::string url, json post);
@@ -31,12 +34,10 @@ private:
     uint16_t checksum(uint8_t *array, uint16_t array_length, uint8_t startbyte);
 
 public:
-    std::string imei;
     uint32_t serv_updtime_NFC = 0;
     uint32_t serv_updtime_PIN = 0;
 
-    uint8_t paket_count;
-    std::vector<uint8_t*> data_list;
+    uint8_t packet_count;
 
     ping_struct device_ping_data;
     history_struct device_history_data;
@@ -62,12 +63,12 @@ public:
     bool Post_device_updtime();
 
     // listener to device requests
-    bool separate_data_by_pakets();
     bool Request_for_update(uint8_t req_code);
-    // bool Data_Body();
+    bool separate_data_by_pakets(uint8_t req_code);
+    bool Data_Body();
 
     //utils
-    uint8_t calc_packets(long long *nfcs);
+    // uint8_t calc_packets(long long *nfcs);
 };
 
 # endif

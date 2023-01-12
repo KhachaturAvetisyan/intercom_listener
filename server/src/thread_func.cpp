@@ -77,17 +77,17 @@ void dev_thread(int client_socket, int thread_num)
                 status = dev.read_byte();
                 if(status == 0x00)
                 {
-                    std::cout << "Do not Update!" << std::endl;
-                    continue;
-                }
-                if(!dev.separate_data_by_pakets())
-                {
-                    perror("separate_data_by_pakets error");
+                    std::cout << "Do not Update NFC!" << std::endl;
                     continue;
                 }
                 else if(status == 0x01)
                 {
-                    for(int i = 0; i < dev.paket_count; ++i)
+                    if(!dev.separate_data_by_pakets(0x00))
+                    {
+                        perror("separate_data_by_pakets error");
+                        continue;
+                    }
+                    for(int i = 0; i < dev.packet_count; ++i)
                     {
                         for(int j = 0; j < 3; ++j)
                         {
@@ -109,43 +109,43 @@ void dev_thread(int client_socket, int thread_num)
                 std::cout << "Thread " << thread_num << " : " << "PIN list update\n";
 
                 // Case #04 Time competition for PIN is false
-                // if(!dev.Get_PIN_list())
-                // {
-                //     perror("Get_PIN_list error");
-                //     continue;
-                // }
-                // if(!dev.separate_data_by_pakets())
-                // {
-                //     perror("separate_data_by_pakets error");
-                //     continue;
-                // }
-                // if(!dev.Request_for_update())
-                // {
-                //     perror("Request_for_update error");
-                //     continue;
-                // }
-                // status = dev.read_byte();
-                // if(status == 0x00)
-                // {
-                //     sleep(30);
-                //     continue;
-                // }
-                // else if(status == 0x01)
-                // {
-                //     for(int i = 0; i < dev.paket_count; ++i)
-                //     {
-                //         for(int j = 0; j < 3; ++j)
-                //         {
-                //             if(dev.Data_Body())
-                //                 break;
-                //         }
-                //     }
-                //     if(!dev.Post_device_updtime())
-                //     {
-                //         perror("Post device updtime error");
-                //         continue;
-                //     }
-                // }
+                if(!dev.Get_PIN_list())
+                {
+                    perror("Get_PIN_list error");
+                    continue;
+                }
+                if(!dev.Request_for_update(0x01))
+                {
+                    perror("Request_for_update error");
+                    continue;
+                }
+                status = dev.read_byte();
+                if(status == 0x00)
+                {
+                    std::cout << "Do not Update PIN!" << std::endl;
+                    continue;
+                }
+                else if(status == 0x01)
+                {
+                    if(!dev.separate_data_by_pakets(0x01))
+                    {
+                        perror("separate_data_by_pakets error");
+                        continue;
+                    }
+                    for(int i = 0; i < dev.packet_count; ++i)
+                    {
+                        for(int j = 0; j < 3; ++j)
+                        {
+                            // if(dev.Data_Body())
+                            //     break;
+                        }
+                    }
+                    if(!dev.Post_device_updtime())
+                    {
+                        perror("Post device updtime error");
+                        continue;
+                    }
+                }
 
             }
         }

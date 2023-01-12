@@ -136,7 +136,7 @@ Bytes 3:6 - Data time
     Data time (UNIX time)
 
 Bytes 7:8 - Data count
-    Count of data (In one packet, the amount of data is 20 (80 bytes))
+    Count of data (In one packet, the amount of data is 16 (128 bytes))
 
 Bytes 9:10 - Checksum
     2 bytes sum of 8 previous bytes
@@ -154,15 +154,15 @@ Byte 1 - Status
 
 ### 2.2. Data packet
 
-**Request:** 83 Bytes
+**Request:** 131 Bytes
 ```
 Byte 1 - Startbyte
     Fixed value 0xB2
 
-Bytes 2:81 - Data
-    20x8 bytes per data unit
+Bytes 2:129 - Data
+    16x8 bytes per data unit
 
-Bytes 82:83 - Checksum
+Bytes 130:131 - Checksum
     2 bytes sum of 81 previous bytes
 ```
 
