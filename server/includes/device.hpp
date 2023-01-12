@@ -18,7 +18,6 @@ private:
     json NFC_list;
     json PIN_list;
 
-    // long long *nfcs;
 
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
     std::string post_req(std::string url, json post);

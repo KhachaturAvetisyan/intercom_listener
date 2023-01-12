@@ -435,38 +435,9 @@ json Device::get_req(std::string url)
 
 bool Device::Request_for_update(uint8_t req_code)
 {
-    // uint8_t packets;
-    // upd_request upd;
-
-    // if(!nfcs[0])
-    //     return (false);
-    // if(req_code == 0X00)
-    // {
-    //     upd.startbyte  = 0XB1;
-    //     upd.datatype   = req_code;
-    //     upd.data_time  = time(NULL);
-    //     upd.data_count = 14;
-    //     // upd.checksum = checksum(upd);
-    //     if(!send_data(upd, sizeof(upd_request)))
-    //     {
-    //         perror("request for update was dumped");
-    //         return (false);
-    //     }
-    // }
-    // else if(req_code == 0x01)
-    // {
-    //     //request for update PIN list
-    //     std::cout << "Update PIN List" << std::endl;
-    // }
-    // else
-    //     return (false);
-        
-    // return (true);
-
+    uint8_t array[10];
     upd_request request;
-
     request.startbyte = 0xB1;
-
     if(req_code == 0x00)
     {
         request.datatype = 0x00;
@@ -479,107 +450,74 @@ bool Device::Request_for_update(uint8_t req_code)
         request.data_time = serv_updtime_PIN;
         request.data_count = PIN_list.size();
     }
-
-    uint8_t array[10];
-
     array[0] = request.startbyte;
-
     array[1] = request.datatype;
-
     array[2] = request.data_time >> 24;
     array[3] = request.data_time >> 16;
     array[4] = request.data_time >> 8;
     array[5] = request.data_time;
-
     array[6] = request.data_count >> 8;
     array[7] = request.data_count;
-
     request.checksum = checksum(array, 8, 0);
-
     array[8] = request.checksum >> 8;
     array[9] = request.checksum;
-
     if(send_data(array, 10))
     {
         perror("send upd data error");
         return false;
     }
-
     return true;
 }
 
 bool Device::separate_data_by_pakets(uint8_t req_code)
 {
-    // if(NFC_list.size() > 0)
-    // {
-    //     int size = NFC_list.size();
-    //     nfcs = (long long *)malloc(sizeof(long long*) * size);
-    //     std::string nfc;
-    //     int i = -1;
-    //     while(++i < size)
-    //         nfcs[i] = NFC_list[i].get<long long>();
-        
-    //     return (true);
-    // }
-    // return (false);
-
     if(req_code == 0x00)
     {
-        // NFC_list
         uint16_t list_size = NFC_list.size();
-
         packet_count = (list_size + 16 - 1) / 16;
-
         for (int i = 0; i < packet_count; ++i)
         {
             uint8_t array[128];
-
             int j = 0;
             while(list_size > 0 && j < 16)
             {
-                array[j * 8 + 0] = NFC_list[i * 16 + j] >> 56;
-                array[j * 8 + 1] = NFC_list[i * 16 + j] >> 48;
-                array[j * 8 + 2] = NFC_list[i * 16 + j] >> 40;
-                array[j * 8 + 3] = NFC_list[i * 16 + j] >> 32;
-                array[j * 8 + 4] = NFC_list[i * 16 + j] >> 24;
-                array[j * 8 + 5] = NFC_list[i * 16 + j] >> 16;
-                array[j * 8 + 6] = NFC_list[i * 16 + j] >> 8;
-                array[j * 8 + 7] = NFC_list[i * 16 + j];
-
+                long long lst = NFC_list[i * 16 + j].get<long long>();
+                array[j * 8 + 0] = lst >> 56;
+                array[j * 8 + 1] = lst >> 48;
+                array[j * 8 + 2] = lst >> 40;
+                array[j * 8 + 3] = lst >> 32;
+                array[j * 8 + 4] = lst >> 24;
+                array[j * 8 + 5] = lst >> 16;
+                array[j * 8 + 6] = lst >> 8;
+                array[j * 8 + 7] = lst;
                 ++j;
                 --list_size;
             }
-
             data_list.push_back(array);
         }
     }
     else if (req_code == 0x01)
     {
-        // PIN_list
         uint16_t list_size = PIN_list.size();
-
         packet_count = (list_size + 16 - 1) / 16;
-
         for (int i = 0; i < packet_count; ++i)
         {
             uint8_t array[128];
-
             int j = 0;
             while(list_size > 0 && j < 16)
             {
-                array[j * 8 + 0] = PIN_list[i * 16 + j] >> 56;
-                array[j * 8 + 1] = PIN_list[i * 16 + j] >> 48;
-                array[j * 8 + 2] = PIN_list[i * 16 + j] >> 40;
-                array[j * 8 + 3] = PIN_list[i * 16 + j] >> 32;
-                array[j * 8 + 4] = PIN_list[i * 16 + j] >> 24;
-                array[j * 8 + 5] = PIN_list[i * 16 + j] >> 16;
-                array[j * 8 + 6] = PIN_list[i * 16 + j] >> 8;
-                array[j * 8 + 7] = PIN_list[i * 16 + j];
-
+                long long lst = PIN_list[i * 16 + j].get<long long>();
+                array[j * 8 + 0] = lst >> 56;
+                array[j * 8 + 1] = lst >> 48;
+                array[j * 8 + 2] = lst >> 40;
+                array[j * 8 + 3] = lst >> 32;
+                array[j * 8 + 4] = lst >> 24;
+                array[j * 8 + 5] = lst >> 16;
+                array[j * 8 + 6] = lst >> 8;
+                array[j * 8 + 7] = lst;
                 --list_size;
                 ++j;
             }
-
             data_list.push_back(array);
         }
     }
@@ -588,30 +526,28 @@ bool Device::separate_data_by_pakets(uint8_t req_code)
         std::cout << "separate_data_by_pakets error : unknown req_code!\n";
         return false;
     }
+    return (true);
 }
 
 bool Device::Data_Body(uint8_t* body)
 {
-    // data_packet_struct data_packet;
-    
-    // data_packet.startbyte = 0xB2;
-    // data_packet.data = body;
-    // data_packet.checksum;
-
     uint8_t array[131];
     uint16_t sum;
-
     array[0] = 0xB2;
     int i = 0;
     while(++i < 128)
         array[i] = body[i - 1];
-
-        sum = checksum(array, 129, 0);
+    sum = checksum(array, 129, 0);
     array[129] = sum >> 8;
     array[130] = sum;
     if(!send_data(array, 131))
     {
         perror("Packet Not Sended");
+        return (false);
+    }
+    if(read_byte() == 0X00)
+    {
+        perror("Packet Recive status error");
         return (false);
     }
     return (true);
