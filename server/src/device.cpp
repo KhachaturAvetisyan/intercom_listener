@@ -437,6 +437,7 @@ bool Device::Request_for_update(uint8_t req_code)
 {
     uint8_t array[10];
     upd_request request;
+
     request.startbyte = 0xB1;
     if(req_code == 0x00)
     {
@@ -450,31 +451,46 @@ bool Device::Request_for_update(uint8_t req_code)
         request.data_time = serv_updtime_PIN;
         request.data_count = PIN_list.size();
     }
+
     array[0] = request.startbyte;
+    
     array[1] = request.datatype;
+    
     array[2] = request.data_time >> 24;
     array[3] = request.data_time >> 16;
     array[4] = request.data_time >> 8;
     array[5] = request.data_time;
+    
     array[6] = request.data_count >> 8;
     array[7] = request.data_count;
+    
     request.checksum = checksum(array, 8, 0);
     array[8] = request.checksum >> 8;
     array[9] = request.checksum;
+    
     if(send_data(array, 10))
     {
         perror("send upd data error");
         return false;
     }
+    if(read_byte() == 0X00)
+    {
+        perror("Packet Recive status error");
+        return false;
+    }
+
     return true;
 }
 
 bool Device::separate_data_by_pakets(uint8_t req_code)
 {
+
     if(req_code == 0x00)
     {
         uint16_t list_size = NFC_list.size();
         packet_count = (list_size + 16 - 1) / 16;
+        data_list.clear();
+
         for (int i = 0; i < packet_count; ++i)
         {
             uint8_t array[128];
@@ -533,13 +549,17 @@ bool Device::Data_Body(uint8_t* body)
 {
     uint8_t array[131];
     uint16_t sum;
+    
     array[0] = 0xB2;
+    
     int i = 0;
     while(++i < 128)
         array[i] = body[i - 1];
+    
     sum = checksum(array, 129, 0);
     array[129] = sum >> 8;
     array[130] = sum;
+
     if(!send_data(array, 131))
     {
         perror("Packet Not Sended");
@@ -548,7 +568,8 @@ bool Device::Data_Body(uint8_t* body)
     if(read_byte() == 0X00)
     {
         perror("Packet Recive status error");
-        return (false);
+        return false;
     }
-    return (true);
+
+    return true;
 }

@@ -36,11 +36,11 @@ typedef struct
   uint16_t checksum; 
 }upd_request;
 
-typedef struct
-{
-  uint8_t startbyte;
-  uint8_t data[128];
-  uint16_t checksum;
-}data_packet_struct;
+// typedef struct
+// {
+//   uint8_t startbyte;
+//   uint8_t data[128];
+//   uint16_t checksum;
+// }data_packet_struct;
 
 #endif // STRUCTS_HEADER

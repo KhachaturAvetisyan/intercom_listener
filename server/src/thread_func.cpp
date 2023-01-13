@@ -42,8 +42,6 @@ void dev_thread(int client_socket, int thread_num)
     dev.send_status(0x01);
 
     uint8_t startbyte = 0x01;
-    uint8_t status;
-
     while(startbyte != 0x00)
     {
         startbyte = dev.read_byte();
@@ -74,13 +72,7 @@ void dev_thread(int client_socket, int thread_num)
                     perror("Request_for_update error");
                     continue;
                 }
-                status = dev.read_byte();
-                if(status == 0x00)
-                {
-                    std::cout << "Do not Update NFC!" << std::endl;
-                    continue;
-                }
-                else if(status == 0x01)
+                else
                 {
                     if(!dev.separate_data_by_pakets(0x00))
                     {
@@ -119,13 +111,7 @@ void dev_thread(int client_socket, int thread_num)
                     perror("Request_for_update error");
                     continue;
                 }
-                status = dev.read_byte();
-                if(status == 0x00)
-                {
-                    std::cout << "Do not Update PIN!" << std::endl;
-                    continue;
-                }
-                else if(status == 0x01)
+                else
                 {
                     if(!dev.separate_data_by_pakets(0x01))
                     {

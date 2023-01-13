@@ -65,9 +65,6 @@ public:
     bool Request_for_update(uint8_t req_code);
     bool separate_data_by_pakets(uint8_t req_code);
     bool Data_Body(uint8_t* body);
-
-    //utils
-    // uint8_t calc_packets(long long *nfcs);
 };
 
 # endif
